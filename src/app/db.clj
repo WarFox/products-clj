@@ -1,11 +1,12 @@
 (ns app.db
   (:require
-   [next.jdbc :as jdbc]))
+   [next.jdbc :as jdbc]
+   [next.jdbc.plan :as plan]))
 
 (defn get-products
   "Fetches products from the postgres using next.jdbc"
   [db]
-  (jdbc/execute! db ["SELECT * FROM products"]))
+  (plan/select! db [:id :name :price :description] ["SELECT * FROM products"]))
 
 (defn create-product
   "Creates a new product in the postgres using next.jdbc"

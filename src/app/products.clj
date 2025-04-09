@@ -6,7 +6,6 @@
   [request]
   (let [db (-> request :reitit.core/match :data :db)
         products (db/get-products db)]
-    (println products)
     (if (empty? products)
       {:status 404
        :body   "No products found"}
