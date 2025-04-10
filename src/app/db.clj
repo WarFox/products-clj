@@ -20,7 +20,7 @@
 (defn get-product
   "Fetches a product by ID from the postgres using next.jdbc"
   [db id]
-  (jdbc/execute! db ["SELECT * FROM products WHERE id = ?" id] :result-set-fn first))
+  (plan/select-one! db [:id :name :price :description] ["SELECT * FROM products WHERE id = ?" (parse-uuid id)]))
 
 (defn create-table
   "Creates the products table in the postgres using next.jdbc"

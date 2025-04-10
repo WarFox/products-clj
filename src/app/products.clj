@@ -4,7 +4,7 @@
 (defn get-products
   "Fetches products from the postgres"
   [request]
-  (let [db (-> request :reitit.core/match :data :db)
+  (let [db (:db request)
         products (db/get-products db)]
     (if (empty? products)
       {:status 404
@@ -27,7 +27,7 @@
   "Fetches a product by ID from the postgres"
   [request]
   (let [db (:db request)
-        id (:id request)
+        id (:id (:path-params request))
         product (db/get-product db id)]
     (if product
       {:status 200

@@ -8,6 +8,7 @@
                  [integrant/integrant "0.13.1"]
                  [integrant/repl  "0.4.0"]
                  [metosin/reitit-ring "0.8.0"]
+                 [metosin/reitit-middleware "0.8.0"]
                  [org.clojure/clojure "1.12.0"]
                  [org.postgresql/postgresql "42.7.5"]
                  [ring/ring-core "1.14.1"]
