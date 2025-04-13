@@ -21,7 +21,8 @@
 
 (def json-request-body
   {:name ::json-body
-   :wrap #(wrap-json-body % {:keywords? true})})
+   :wrap #(wrap-json-body % {:keywords? true
+                             :key-fn csk/->kebab-case-keyword})})
 
 (def json-response-body
   {:name ::json-response

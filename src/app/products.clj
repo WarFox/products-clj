@@ -17,12 +17,8 @@
   [request]
   (let [db      (:db request)
         body    (:body request)
-        product (-> body
-                     (assoc
-                       :id (or (:id body)
-                               (random-uuid))
-                       :price-in-cents (:priceInCents body))
-                     (dissoc :priceInCents))]
+        product (assoc body
+                       :id (or (:id body) (random-uuid)))]
     (if-let [product (db/create-product db product)]
       {:status 201
        :body   product}
