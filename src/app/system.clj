@@ -37,10 +37,10 @@
   (println "Initializing database" db)
   (db/create-table db)
   (db/create-product db
-                     {:id (random-uuid)
-                      :name        "Sample Product"
-                      :price       19.99
-                      :description "This is a sample product"}))
+                     {:id             (random-uuid)
+                      :name           "Sample Product"
+                      :price-in-cents 1999
+                      :description    "This is a sample product"}))
 
 (defmethod ig/init-key :handler/run-app
   [_ {:keys [db]}]

@@ -3,9 +3,10 @@
             [reitit.ring.spec :as rrs]
             [reitit.core :as r]
             [app.products :as products]
+            [camel-snake-kebab.core :as csk]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [reitit.ring.middleware.parameters :refer [parameters-middleware]]
-            [ring.middleware.json :refer [wrap-json-response]]))
+            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]))
 
 (def routes
   [["/v1" {:name :version1}
@@ -18,6 +19,14 @@
                 (fn [req]
                   (handler (assoc req :db db)))))})
 
+(def json-request-body
+  {:name ::json-body
+   :wrap #(wrap-json-body % {:keywords? true})})
+
+(def json-response-body
+  {:name ::json-response
+   :wrap #(wrap-json-response % {:key-fn csk/->camelCaseString})})
+
 (defn handler
   [db]
   (ring/ring-handler
@@ -25,10 +34,11 @@
     routes
     {:validate rrs/validate
      :data     {:db         db
-                :middleware [middleware-db
+                :middleware [json-request-body
+                             json-response-body
+                             middleware-db
                              parameters-middleware
-                             wrap-keyword-params
-                             wrap-json-response]}})))
+                             wrap-keyword-params]}})))
 
 (comment
   (r/route-names (ring/router routes))
