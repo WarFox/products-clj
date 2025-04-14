@@ -12,6 +12,7 @@
                  [metosin/reitit-ring "0.8.0"]
                  [org.clojure/clojure "1.12.0"]
                  [org.postgresql/postgresql "42.7.5"]
+                 [ring-cors "0.1.13"]
                  [ring/ring-core "1.14.1"]
                  [ring/ring-jetty-adapter "1.14.1"]
                  [ring/ring-json "0.5.1"]]

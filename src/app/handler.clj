@@ -6,6 +6,7 @@
             [camel-snake-kebab.core :as csk]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [reitit.ring.middleware.parameters :refer [parameters-middleware]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]))
 
 (def routes
@@ -28,6 +29,12 @@
   {:name ::json-response
    :wrap #(wrap-json-response % {:key-fn csk/->camelCaseString})})
 
+(def cors-middleware
+  {:name ::cors-middleware
+   :wrap #(wrap-cors %
+                     :access-control-allow-origin [#"http://localhost:8280"]
+                     :access-control-allow-methods [:get :post :put :delete])})
+
 (defn handler
   [db]
   (ring/ring-handler
@@ -35,7 +42,8 @@
     routes
     {:validate rrs/validate
      :data     {:db         db
-                :middleware [json-request-body
+                :middleware [cors-middleware
+                             json-request-body
                              json-response-body
                              middleware-db
                              parameters-middleware
