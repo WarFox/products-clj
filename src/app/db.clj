@@ -16,7 +16,7 @@
 (defn create-product
   "Creates a new product in the postgres using next.jdbc"
   [db product]
-  (jdbc/execute! db ["INSERT INTO products (id, name, price_in_cents, description) VALUES (?, ?, ?, ?) RETURNING *"
+  (jdbc/execute-one! db ["INSERT INTO products (id, name, price_in_cents, description) VALUES (?, ?, ?, ?) RETURNING *"
                      (:id product)
                      (:name product)
                      (:price-in-cents product)
