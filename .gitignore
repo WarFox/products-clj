@@ -11,3 +11,17 @@ pom.xml.asc
 /.prepl-port
 .hgignore
 .hg/
+
+## Frontend
+/out/
+/resources/public/js/compiled/
+/resources/public/css/
+/target/
+/*-init.clj
+/*.log
+
+# Node.js dependencies
+/node_modules/
+
+# shadow-cljs cache, port files
+/.shadow-cljs/
