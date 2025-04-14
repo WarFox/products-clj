@@ -1,12 +1,17 @@
 (ns app.db
   (:require
    [next.jdbc :as jdbc]
-   [next.jdbc.plan :as plan]))
+   [next.jdbc.plan :as plan]
+   [next.jdbc.sql :as sql]))
 
 (defn get-products
   "Fetches products from the postgres using next.jdbc"
   [db]
-  (plan/select! db [:id :name :price :description] ["SELECT * FROM products"]))
+  (plan/select! db
+                [:id :name :price-in-cents :description]
+                ["select * from products"]
+                jdbc/unqualified-snake-kebab-opts))
+
 
 (defn create-product
   "Creates a new product in the postgres using next.jdbc"
@@ -21,7 +26,7 @@
 (defn get-product
   "Fetches a product by ID from the postgres using next.jdbc"
   [db id]
-  (plan/select-one! db [:id :name :price :description] ["SELECT * FROM products WHERE id = ?" (parse-uuid id)]))
+  (sql/get-by-id db :products id))
 
 (defn create-table
   "Creates the products table in the postgres using next.jdbc"
@@ -36,4 +41,4 @@
 (defn delete-product
   "Deletes a product by ID from the postgres using next.jdbc"
   [db id]
-  (jdbc/execute! db ["DELETE FROM products WHERE id = ?" (parse-uuid id)]))
+  (sql/delete! db :products {:id id}))

@@ -4,13 +4,13 @@
 (defn get-products
   "Fetches products from the postgres"
   [request]
-  (let [db (:db request)
+  (let [db       (:db request)
         products (db/get-products db)]
     (if (empty? products)
       {:status 404
        :body   "No products found"}
       {:status 200
-       :body products})))
+       :body   products})))
 
 (defn create-product
   "Creates a new product in the postgres"
@@ -28,8 +28,8 @@
 (defn get-product
   "Fetches a product by ID from the postgres"
   [request]
-  (let [db (:db request)
-        id (:id (:path-params request))
+  (let [db      (:db request)
+        id      (-> request :path-params :id parse-uuid)
         product (db/get-product db id)]
     (if product
       {:status 200
@@ -40,8 +40,8 @@
 (defn delete-product
   "Deletes a product by ID from the postgres"
   [request]
-  (let [db (:db request)
-        id (:id (:path-params request))
+  (let [db      (:db request)
+        id      (-> request :path-params :id parse-uuid)
         deleted (db/delete-product db id)]
     (if deleted
       {:status 204}
