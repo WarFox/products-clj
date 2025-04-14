@@ -5,6 +5,8 @@ This is a full stack Clojure/ClojureScript application that allows users to mana
 - Clojure
 - ClojureScript
 
+![Products](https://gist.githubusercontent.com/WarFox/91fff34911d1080a66723770cb12c4e7/raw/ec78e55cb4f834fd3e4ea1c57f0ee521f9120384/products-app.png)
+
 ## Installation
 
 ```
