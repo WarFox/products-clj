@@ -25,3 +25,6 @@ pom.xml.asc
 
 # shadow-cljs cache, port files
 /.shadow-cljs/
+
+# IntelliJ
+/.idea/
