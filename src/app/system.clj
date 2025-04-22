@@ -1,10 +1,10 @@
 (ns app.system
-  (:require [integrant.core :as ig]
-            [app.containers :as containers]
-            [next.jdbc :as jdbc]
+  (:require [app.containers :as containers]
             [app.db :as db]
-            [ring.adapter.jetty :refer [run-jetty]]
-            [app.handler :as handler]))
+            [app.handler :as handler]
+            [app.server :as server]
+            [integrant.core :as ig]
+            [next.jdbc :as jdbc]))
 
 (def db-spec
   {:dbtype   "postgres"
@@ -24,8 +24,8 @@
    :handler/run-app {:db (ig/ref :db/connection)}})
 
 (defmethod ig/init-key :adapter/jetty
-  [_ {:keys [handler] :as opts}]
-  (run-jetty handler (-> opts (dissoc :handler) (assoc :join? false))))
+  [_ {:keys [handler port]}]
+  (server/start! handler port))
 
 (defmethod ig/init-key :db/instance
   [_ {:keys [db-spec]}]
@@ -54,7 +54,7 @@
 
 (defmethod ig/halt-key! :adapter/jetty
   [_ server]
-  (.stop server))
+  (server/stop! server))
 
 (defn init
   "Initialize the system."
