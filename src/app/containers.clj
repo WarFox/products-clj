@@ -3,7 +3,8 @@
    [clj-test-containers.core :as tc]))
 
 (defn postgres-container
-  [{:keys [dbname user password port] :as opts}]
+  [{:keys [dbname user password port]}]
+  (println "Starting PostgreSQL container")
   (-> (tc/create {:image-name    "postgres:14.1"
                   :exposed-ports [port]
                   :env-vars      {"POSTGRES_DB"       dbname

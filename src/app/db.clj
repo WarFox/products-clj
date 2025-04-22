@@ -8,6 +8,7 @@
 (defn get-products
   "Fetches products from the postgres using next.jdbc"
   [db]
+  (read-as-instant)
   (plan/select! db
                 [:id :name :price-in-cents :description :created-at :updated-at]
                 ["select * from products"]
