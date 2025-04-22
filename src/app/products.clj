@@ -1,4 +1,5 @@
 (ns app.products
+  (:import [java.time Instant])
   (:require [app.db :as db]))
 
 (defn get-products
@@ -16,9 +17,11 @@
   "Creates a new product in the postgres"
   [request]
   (let [db      (:db request)
-        body    (:body request)
-        product (assoc body
-                       :id (or (:id body) (random-uuid)))]
+        product (:body-params request)
+        product (assoc product
+                       :id             (or (:id product) (random-uuid))
+                       :created-at     (or (:created-at product) (Instant/now))
+                       :updated-at     (or (:updated-at product) (Instant/now)))]
     (if-let [product (db/create-product db product)]
       {:status 201
        :body   product}

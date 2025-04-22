@@ -6,15 +6,19 @@
             [ring.adapter.jetty :refer [run-jetty]]
             [app.handler :as handler]))
 
+(def db-spec
+  {:dbtype   "postgres"
+   :dbname   "products"
+   :user     "products"
+   :password "verysecret"
+   :host     "localhost"
+   :port     5432})
+
 (def config
   {:adapter/jetty   {:handler (ig/ref :handler/run-app)
                      :port    3000}
-   :db/instance     {:port 5432}
-   :db/connection   {:dbtype      "postgres"
-                     :dbname      "products"
-                     :user        "products"
-                     :password    "verysecret"
-                     :host        "localhost"
+   :db/instance     {:db-spec db-spec}
+   :db/connection   {:db-spec db-spec
                      :db-instance (ig/ref :db/instance)}
    :db/initialize   {:db (ig/ref :db/connection)}
    :handler/run-app {:db (ig/ref :db/connection)}})
@@ -24,13 +28,15 @@
   (run-jetty handler (-> opts (dissoc :handler) (assoc :join? false))))
 
 (defmethod ig/init-key :db/instance
-  [_ {:keys [port]}]
-  (containers/postgres-container port))
+  [_ {:keys [db-spec]}]
+  (println "Starting database instance")
+  (containers/postgres-container db-spec))
 
 (defmethod ig/init-key :db/connection
-  [_ {:keys [db-instance] :as opts}]
-  (jdbc/get-datasource (assoc opts
-                              :port (get (:mapped-ports db-instance) 5432))))
+  [_ {:keys [db-spec db-instance]}]
+  (println "Creating db connection")
+  (jdbc/get-datasource (assoc db-spec
+                              :port (get (:mapped-ports db-instance) (:port db-spec)))))
 
 (defmethod ig/init-key :db/initialize
   [_ {:keys [db]}]
@@ -52,5 +58,11 @@
 
 (defn init
   "Initialize the system."
-  []
-  (ig/init config))
+  [{:keys [server-port]}]
+  (ig/init (update-in
+            config
+            [:adapter/jetty :port]
+            (fn [port]
+              (if server-port
+                server-port
+                port)))))

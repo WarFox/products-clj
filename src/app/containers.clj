@@ -3,14 +3,19 @@
    [clj-test-containers.core :as tc]))
 
 (defn postgres-container
-  [port]
-  (println "Starting container")
+  [{:keys [dbname user password port] :as opts}]
   (-> (tc/create {:image-name    "postgres:14.1"
                   :exposed-ports [port]
-                  :env-vars      {"POSTGRES_PASSWORD" "verysecret"
-                                  "POSTGRES_USER"     "products"
-                                  "POSTGRES_DB"       "products"}})
+                  :env-vars      {"POSTGRES_DB"       dbname
+                                  "POSTGRES_USER"     user
+                                  "POSTGRES_PASSWORD" password}})
       (tc/bind-filesystem! {:host-path      "/tmp"
                             :container-path "/opt"
                             :mode           :read-only})
       (tc/start!)))
+
+
+(defn stop!
+  [container]
+  (println "Stopping container")
+  (tc/stop! container))
