@@ -5,18 +5,20 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[camel-snake-kebab "0.4.3"]
                  [clj-test-containers "0.7.4"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.18.2"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.18.3"]
                  [com.github.seancorfield/next.jdbc "1.3.1002"]
                  [integrant/integrant "0.13.1"]
                  [integrant/repl  "0.4.0"]
                  [metosin/muuntaja "0.6.11"]
+                 [metosin/reitit-malli "0.8.0"]
                  [metosin/reitit-middleware "0.8.0"]
                  [metosin/reitit-ring "0.8.0"]
                  [org.clojure/clojure "1.12.0"]
                  [org.postgresql/postgresql "42.7.5"]
                  [ring-cors "0.1.13"]
                  [ring/ring-core "1.14.1"]
-                 [ring/ring-jetty-adapter "1.14.1"]
+                 [ring/ring-devel "1.14.1"]
+                 [ring/ring-jetty-adapter "1.14.1"]]
   :main ^:skip-aot app.core
   :plugins [[lein-ring "0.12.6"]]
   :target-path "target/%s"

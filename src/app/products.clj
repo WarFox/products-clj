@@ -54,10 +54,18 @@
 (def routes
   [["/products"
     {:name ::products
-     :get  get-products
-     :post create-product}]
-
+     :get  {:summary   "List products"
+            :responses {200 {:body spec/ProductV1List}}
+            :handler   get-products}
+     :post {:summary    "Create new Product"
+            :parameters {:body spec/ProductV1Request}
+            :responses  {201 {:body spec/ProductV1}}
+            :handler    create-product}}]
    ["/products/:id"
     {:name   ::product-id
-     :get    get-product
-     :delete delete-product}]])
+     :get    {:summary    "Get Product by uuid"
+              :parameters {:path {:id uuid?}}
+              :handler    get-product
+              :responses  {200 {:body spec/ProductV1}}}
+     :delete {:parameters {:path {:id uuid?}}
+              :handler    delete-product}}]])

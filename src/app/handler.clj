@@ -2,8 +2,10 @@
   (:require [app.products :as products]
             [camel-snake-kebab.core :as csk]
             [muuntaja.core :as m]
+            [reitit.coercion.malli :as malli]
             [reitit.core :as r]
             [reitit.ring :as ring]
+            [reitit.ring.coercion :as coercion]
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [reitit.ring.middleware.parameters :refer [parameters-middleware]]
             [reitit.ring.spec :as rrs]
@@ -44,12 +46,16 @@
     {:validate rrs/validate
      :data     {:db         db
                 :muuntaja   muuntaja-instance
+                :coercion   malli/coercion
                   ;; order of middldewares matter
                 :middleware [[wrap-cors :access-control-allow-origin [#"http://localhost:8280"]
-                              :access-control-allow-methods [:get :post :put :delete]]
+                                        :access-control-allow-methods [:get :post :put :delete]]
                              wrap-keyword-params
                              parameters-middleware
                              muuntaja/format-middleware
+                             coercion/coerce-exceptions-middleware
+                             coercion/coerce-request-middleware
+                             coercion/coerce-response-middleware
                              db-middleware
                              stacktrace/wrap-stacktrace-log]}})
    (ring/routes
