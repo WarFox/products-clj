@@ -46,7 +46,9 @@
                      {:id             (random-uuid)
                       :name           "Sample Product"
                       :price-in-cents 1999
-                      :description    "This is a sample product"}))
+                      :description    "This is a sample product"
+                      :created-at     (java.time.Instant/now)
+                      :updated-at     (java.time.Instant/now)}))
 
 (defmethod ig/init-key :handler/run-app
   [_ {:keys [db]}]
