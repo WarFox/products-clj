@@ -8,15 +8,25 @@
 
 (def ^:dynamic *db* (atom nil))
 
+(defn with-db
+  "A fixture that sets up a PostgreSQL container for testing."
+  [f]
+  (let [container (containers/postgres-container system/db-spec)
+        port      (-> container :mapped-ports (get 5432))
+        db-spec   (assoc system/db-spec :port port)]
+    (reset! *db* db-spec)
+    (f)
+    (containers/stop! container)))
+
+(defn given-table
+  "A fixture that sets up a PostgreSQL container and creates a table for testing."
+  [f]
+  (db/create-table @*db*)
+  (f))
+
 (t/use-fixtures :once
-  (fn [f]
-    (let [container (containers/postgres-container system/db-spec)
-          port      (-> container :mapped-ports (get 5432))
-          db-spec   (assoc system/db-spec :port port)]
-      (reset! *db* db-spec)
-      (db/create-table db-spec)
-      (f)
-      (containers/stop! container))))
+  with-db
+  given-table)
 
 (t/deftest create-product-test
   (t/testing "Create a product"
@@ -40,8 +50,8 @@
                    :price-in-cents 100
                    :created-at     (Instant/now)
                    :updated-at     (Instant/now)}]
-      (products/create-product {:db @*db*
-                           :body-params product}) ; Create a product for testing
+      (products/create-product {:db          @*db*
+                                :body-params product}) ; Create a product for testing
       (t/is (= {:status 200
                 :body   [product]}
                (products/get-products {:db @*db*}))))))
