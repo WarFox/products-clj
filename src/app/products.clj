@@ -13,15 +13,36 @@
       {:status 200
        :body   products})))
 
+(defn parse-inst-or-now
+  "Parses a string to an Instant or returns the current time if nil or invalid"
+  [s]
+  (cond
+    (nil? s) (Instant/now)
+    (inst? s) s
+    (string? s) (try
+                  (Instant/parse s)
+                  (catch Exception e
+                    (Instant/now)))))
+
+(defn parse-uuid-or-random
+  [s]
+  (cond
+    (nil? s) (random-uuid)
+    (uuid? s) s
+    (string? s) (try
+                  (java.util.UUID/fromString s)
+                  (catch Exception e
+                    (random-uuid)))))
+
 (defn create-product
   "Creates a new product in the postgres"
   [request]
   (let [db      (:db request)
         product (:body-params request)
         product (assoc product
-                       :id             (or (:id product) (random-uuid))
-                       :created-at     (or (:created-at product) (Instant/now))
-                       :updated-at     (or (:updated-at product) (Instant/now)))]
+                       :id         (parse-uuid-or-random (:id product))
+                       :created-at (parse-inst-or-now (:created-at product))
+                       :updated-at (parse-inst-or-now (:updated-at product)))]
     (if-let [product (db/create-product db product)]
       {:status 201
        :body   product}
