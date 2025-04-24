@@ -1,6 +1,7 @@
 (ns app.products
   (:import [java.time Instant])
-  (:require [app.db :as db]))
+  (:require [app.db :as db]
+            [app.spec :as spec]))
 
 (defn get-products
   "Fetches products from the postgres"
