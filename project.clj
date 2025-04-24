@@ -25,4 +25,8 @@
   :ring {:handler app.handler/handler}
   :profiles {:uberjar
              {:aot      :all
-              :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
+              :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}
+             :dev
+             {:dependencies [[cheshire "6.0.0"]
+                             [clj-http "3.13.0"]
+                             [org.clojure/data.json "2.5.1"]]}})
