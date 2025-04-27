@@ -32,9 +32,7 @@
 
 (defmethod ig/init-key :server/port
   [_ server]
-  (let [port (server/server-port server)]
-    (println "Server listening on port" port)
-    (reset! *server-port*  port)))
+  (reset! *server-port* (server/server-port server)))
 
 (defn init-test-system
   "Initialize the system."
