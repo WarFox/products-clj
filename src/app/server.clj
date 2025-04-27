@@ -8,3 +8,9 @@
 (defn stop!
   [server]
   (.stop server))
+
+(defn server-port
+  [server]
+  (-> (.getConnectors server)
+      (first)
+      (.getLocalPort)))

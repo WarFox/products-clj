@@ -1,0 +1,5 @@
+;; Used for dev and tests, extends production
+{:db/container    {:db-spec #ig/ref :db/spec}
+ :db/mapped-port  {:container #ig/ref :db/container}
+ :db/connection   {:mapped-port #ig/ref :db/mapped-port}
+ :server/port     #ig/ref :adapter/jetty}

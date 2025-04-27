@@ -1,49 +1,35 @@
 (ns app.products-test
   (:import [java.time Instant])
-  (:require [app.containers :as containers]
-            [app.db :as db]
+  (:require [app.db :as db]
             [app.products :as products]
             [app.system :as system]
+            [app.test-system :as test-system]
             [camel-snake-kebab.core :as csk]
             [clj-http.client :as http]
             [clojure.data.json :as json]
             [clojure.test :as t]
             [next.jdbc :as jdbc]))
 
-;; db is set on startup
-(def ^:dynamic *db* (atom nil))
-
-(defn with-db
-  "A fixture that sets up a PostgreSQL container for testing."
-  [f]
-  (let [container (containers/postgres-container system/db-spec)
-        port      (-> container :mapped-ports (get 5432))
-        db-spec   (assoc system/db-spec :port port)]
-    (reset! *db* db-spec)
-    (f)
-    (containers/stop! container)))
-
+;; TODO use migrations for setting up tables
 (defn given-table
-  "A fixture that sets up a PostgreSQL container and creates a table for testing."
   [f]
-  (db/create-table @*db*)
+  (db/create-table @test-system/*db*)
   (f))
 
 ;; TODO use random port for testing
 (defn with-system
   [f]
-  (system/init {:server-port 3030})
-  (f))
+  (let [sys (test-system/init-test-system)]
+    (f)
+    (system/halt! sys)))
 
-;; TODO Get database connection from system
 (t/use-fixtures :once
-  with-db
-  given-table
-  with-system)
+  with-system
+  given-table)
 
 (defn truncate-table
   [f]
-  (jdbc/execute! @*db* ["truncate table products"])
+  (jdbc/execute! @test-system/*db* ["truncate table products"])
   (f))
 
 (t/use-fixtures :each
@@ -57,7 +43,7 @@
                    :price-in-cents 100
                    :created-at     (Instant/now)
                    :updated-at     (Instant/now)}
-          request {:db          @*db*
+          request {:db          @test-system/*db*
                    :body-params product}]
       (t/is (= {:status 201
                 :body   product}
@@ -71,11 +57,11 @@
                    :price-in-cents 100
                    :created-at     (Instant/now)
                    :updated-at     (Instant/now)}]
-      (products/create-product {:db          @*db*
+      (products/create-product {:db          @test-system/*db*
                                 :body-params product}) ; Create a product for testing
       (t/is (= {:status 200
                 :body   [product]}
-               (products/get-products {:db @*db*}))))))
+               (products/get-products {:db @test-system/*db*}))))))
 
 (t/deftest get-product-by-id
   (t/testing "Get product by id"
@@ -85,24 +71,24 @@
                    :price-in-cents 100
                    :created-at     (Instant/now)
                    :updated-at     (Instant/now)}]
-      (products/create-product {:db          @*db*
+      (products/create-product {:db          @test-system/*db*
                                 :body-params product}) ; Create a product for testing
       (t/is (= {:status 200
                 :body   product}
-               (products/get-product {:db @*db*
+               (products/get-product {:db          @test-system/*db*
                                       :path-params {:id (.toString (:id product))}}))))))
-
 
 (t/deftest post-create-product-test
   (t/testing "Send POST request to server to create a product"
-    (let [now      (str (Instant/now ))
+    (let [now      (str (Instant/now))
           product  {:id             (str (random-uuid))
                     :name           "Test Product"
                     :description    "This is a test product"
                     :price-in-cents 100
                     :created-at     now
                     :updated-at     now}
-          response (http/post "http://localhost:3030/v1/products"
+          url      (format "http://localhost:%s/v1/products" @test-system/*server-port*)
+          response (http/post url
                               {:form-params  product
                                :content-type :json})]
       (t/is (= 201 (:status response)))

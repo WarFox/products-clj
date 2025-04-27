@@ -1,8 +1,8 @@
 (ns app.db
   (:require
    [next.jdbc :as jdbc]
-   [next.jdbc.plan :as plan]
    [next.jdbc.date-time :refer [read-as-instant]]
+   [next.jdbc.plan :as plan]
    [next.jdbc.sql :as sql]))
 
 ;; This is needed to read timestamps as instants from postgres

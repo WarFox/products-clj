@@ -1,0 +1,12 @@
+;; Production Configuration
+{:db/spec         {:dbtype   "postgres"
+                   :dbname   "products"
+                   :port     5432
+                   :user     #or [#env DB_USER "products"]
+                   :password #or [#env DB_PASSWORD "products"]
+                   :host     #or [#env DB_HOST "localhost"]}
+ :db/connection   {:db-spec #ig/ref :db/spec}
+ :db/initialize   {:db #ig/ref :db/connection};; run migrations
+ :handler/run-app {:db #ig/ref :db/connection}
+ :adapter/jetty   {:handler #ig/ref :handler/run-app
+                   :port  #long #or [#env PORT 3000]}}
