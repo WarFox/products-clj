@@ -1,4 +1,4 @@
-(ns app.containers
+(ns app.test-containers
   (:require
    [clj-test-containers.core :as tc]))
 
@@ -14,7 +14,6 @@
                             :container-path "/opt"
                             :mode           :read-only})
       (tc/start!)))
-
 
 (defn stop!
   [container]

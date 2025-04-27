@@ -1,6 +1,6 @@
 (ns app.test-system
   (:require [app.config :as config]
-            [app.containers :as containers]
+            [app.test-containers :as tc]
             [app.server :as server]
             [integrant.core :as ig]
             [next.jdbc :as jdbc]))
@@ -12,11 +12,11 @@
 
 (defmethod ig/init-key :db/container
   [_ {:keys [db-spec]}]
-  (containers/postgres-container db-spec))
+  (tc/postgres-container db-spec))
 
 (defmethod ig/halt-key! :db/container
   [_ container]
-  (containers/stop! container))
+  (tc/stop! container))
 
 (defmethod ig/init-key :db/connection
   [_ {:keys [mapped-port]}]
