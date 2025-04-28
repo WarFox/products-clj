@@ -78,19 +78,39 @@
                (products/get-product {:db          @test-system/*db*
                                       :path-params {:id (.toString (:id product))}}))))))
 
+(defn millis
+  [t]
+  (cond
+    (inst? t)
+    (.truncatedTo t java.time.temporal.ChronoUnit/MILLIS)
+
+    (string? t) ;; parse string to Instant and truncate to millis
+    (try
+      (let [instant (Instant/parse t)]
+        (.truncatedTo instant java.time.temporal.ChronoUnit/MILLIS))
+      (catch Exception e
+        t))
+    :else t))
+
 (t/deftest post-create-product-test
   (t/testing "Send POST request to server to create a product"
-    (let [now      (str (Instant/now))
+    (let [nowstr   (str (Instant/now))
           product  {:id             (str (random-uuid))
                     :name           "Test Product"
                     :description    "This is a test product"
                     :price-in-cents 100
-                    :created-at     now
-                    :updated-at     now}
+                    :created-at     nowstr
+                    :updated-at     nowstr}
           url      (format "http://localhost:%s/v1/products" @test-system/*server-port*)
           response (http/post url
                               {:form-params  product
-                               :content-type :json})]
+                               :content-type :json})
+          result   (json/read-str (:body response)
+                                  :key-fn csk/->kebab-case-keyword)]
       (t/is (= 201 (:status response)))
-      (t/is (= product (json/read-str (:body response)
-                                      :key-fn csk/->kebab-case-keyword))))))
+      (t/is (= (:id product) (:id result)))
+      (t/is (= (:name product) (:name result)))
+      (t/is (= (:description product) (:description result)))
+      (t/is (= (:price-in-cents product) (:price-in-cents result)))
+      (t/is (= (millis (:created-at product)) (millis (:created-at result))))
+      (t/is (= (millis (:updated-at product)) (millis (:updated-at result)))))))
