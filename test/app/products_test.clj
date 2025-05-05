@@ -4,6 +4,7 @@
             [app.products :as products]
             [app.system :as system]
             [app.test-system :as test-system]
+            [app.server :as server]
             [camel-snake-kebab.core :as csk]
             [clj-http.client :as http]
             [clojure.data.json :as json]
@@ -101,7 +102,7 @@
                     :price-in-cents 100
                     :created-at     nowstr
                     :updated-at     nowstr}
-          url      (format "http://localhost:%s/v1/products" @test-system/*server-port*)
+          url      (format "http://localhost:%s/v1/products" (server/get-port @test-system/*server*))
           response (http/post url
                               {:form-params  product
                                :content-type :json})
