@@ -1,8 +1,9 @@
 (ns user
   (:require [integrant.repl :as ig-repl]
-            [app.system :as system]))
+            [app.core :as app]
+            [app.config :as config]))
 
-(ig-repl/set-prep! (fn [] system/config))
+(ig-repl/set-prep! (fn []  (config/config {:profile :dev})))
 
 (def go ig-repl/go)
 (def halt ig-repl/halt)

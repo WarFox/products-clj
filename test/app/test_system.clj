@@ -1,42 +1,34 @@
 (ns app.test-system
   (:require [app.config :as config]
-            [app.test-containers :as tc]
             [app.server :as server]
+            [app.system] ;; make sure app system is loaded
+            [app.test-containers :as tc]
             [integrant.core :as ig]
             [next.jdbc :as jdbc]))
 
 ;; Test System
-(def ^:dynamic *server-port* (atom nil))
+(def ^:dynamic *server* (atom nil))
 
 (def ^:dynamic *db* (atom nil))
 
-(defmethod ig/init-key :db/container
-  [_ {:keys [db-spec]}]
-  (tc/postgres-container db-spec))
-
-(defmethod ig/halt-key! :db/container
-  [_ container]
-  (tc/stop! container))
+(defmethod ig/init-key :adapter/jetty
+  [_ {:keys [handler port]}]
+  (reset! *server* (server/start! handler port)))
 
 (defmethod ig/init-key :db/connection
-  [_ {:keys [mapped-port]}]
-  (let [config (config/config :test)
-        db-spec (config/db-spec config)]
-    (reset! *db* (jdbc/get-datasource
-                  (assoc db-spec :port mapped-port)))))
-
-(defmethod ig/init-key :db/mapped-port
-  [_ {:keys [container]}]
-  (let [db-port (-> container :mapped-ports (get 5432))]
-    db-port))
-
-(defmethod ig/init-key :server/port
-  [_ server]
-  (reset! *server-port* (server/server-port server)))
+  [_ {:keys [db-spec test-container]}]
+  (let [mapped-ports (:mapped-ports test-container)
+        db-spec      (update db-spec :port #(get mapped-ports % %))]
+    (reset! *db* (jdbc/get-datasource db-spec))))
 
 (defn init-test-system
   "Initialize the system."
   []
-  (let [config (assoc-in (config/config :test)
+  (let [config (assoc-in (config/config {:profile :dev})
                          [:adapter/jetty :port] 0)]
     (ig/init config)))
+
+(defn init-db
+  []
+  (ig/init (config/config {:profile :dev})
+           [:test/container :db/spec :db/connection :db/initialize]))

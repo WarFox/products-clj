@@ -1,18 +1,32 @@
 (ns app.system
   (:require [app.db :as db]
             [app.handler :as handler]
+            [app.test-containers :as tc]
             [app.server :as server]
             [integrant.core :as ig]
             [next.jdbc :as jdbc]))
+
+(defmethod ig/init-key :system/env
+  [_ env]
+  env)
+
+(defmethod ig/init-key :test/container
+  [_ {:keys [db-spec]}]
+  (tc/postgres-container db-spec))
+
+(defmethod ig/halt-key! :test/container
+  [_ container]
+  (tc/stop! container))
 
 (defmethod ig/init-key :db/spec
   [_ opts]
   opts)
 
 (defmethod ig/init-key :db/connection
-  [_ {:keys [db-spec]}]
-  (println "Creating db connection", db-spec)
-  (jdbc/get-datasource db-spec))
+  [_ {:keys [db-spec test-container]}]
+  (let [mapped-ports (:mapped-ports test-container)
+        db-spec      (update db-spec :port #(get mapped-ports % %))]
+    (jdbc/get-datasource db-spec)))
 
 ;; TODO move to migrations
 (defmethod ig/init-key :db/initialize
@@ -42,7 +56,9 @@
 (defn init
   "Initialize the system."
   [config]
-  (ig/init config))
+  (-> config
+      (ig/expand)
+      (ig/init)))
 
 (defn halt!
   "Halt the system."
