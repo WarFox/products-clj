@@ -3,6 +3,7 @@
             [app.handler :as handler]
             [app.test-containers :as tc]
             [app.server :as server]
+            [app.migrations :as migrations]
             [integrant.core :as ig]
             [next.jdbc :as jdbc]))
 
@@ -32,7 +33,7 @@
 (defmethod ig/init-key :db/initialize
   [_ {:keys [db]}]
   (println "Initializing database" db)
-  (db/create-table db)
+  (migrations/migrate db)
   (db/create-product db
                      {:id             (random-uuid)
                       :name           "Sample Product"

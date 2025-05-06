@@ -29,17 +29,6 @@
   [db id]
   (sql/get-by-id db :products id jdbc/unqualified-snake-kebab-opts))
 
-(defn create-table
-  "Creates the products table in the postgres using next.jdbc"
-  [db]
-  (jdbc/execute! db ["CREATE TABLE IF NOT EXISTS products (
-                      id uuid PRIMARY KEY,
-                      name VARCHAR(255) NOT NULL,
-                      price_in_cents BIGINT NOT NULL,
-                      description TEXT,
-                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"]))
-
 (defn delete-product
   "Deletes a product by ID from the postgres using next.jdbc"
   [db id]

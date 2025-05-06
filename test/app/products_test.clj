@@ -11,12 +11,6 @@
             [clojure.test :as t]
             [next.jdbc :as jdbc]))
 
-;; TODO use migrations for setting up tables
-(defn given-table
-  [f]
-  (db/create-table @test-system/*db*)
-  (f))
-
 ;; TODO use random port for testing
 (defn with-system
   [f]
@@ -25,8 +19,7 @@
     (system/halt! sys)))
 
 (t/use-fixtures :once
-  with-system
-  given-table)
+  with-system)
 
 (defn truncate-table
   [f]
