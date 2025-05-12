@@ -1,19 +1,19 @@
 (ns app.spec)
 
 (def ProductV1
-  [:map
+  [:map {:closed true}
    [:id uuid?]
    [:name :string]
    [:description :string]
    [:price-in-cents :int]
-   [:created-at inst?]
-   [:updated-at inst?]])
+   [:created-at :time/instant]
+   [:updated-at :time/instant]])
 
 (def ProductV1Request
-  [:map
+  [:map {:closed true}
    [:name :string]
    [:price-in-cents number?]
    [:description [:maybe :string]]])
 
 (def ProductV1List
-  [:vector [:ref #'ProductV1]])
+  [:vector ProductV1])

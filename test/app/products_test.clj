@@ -1,17 +1,15 @@
 (ns app.products-test
-  (:import [java.time Instant])
-  (:require [app.db :as db]
-            [app.products :as products]
-            [app.system :as system]
-            [app.test-system :as test-system]
-            [app.server :as server]
-            [camel-snake-kebab.core :as csk]
-            [clj-http.client :as http]
-            [clojure.data.json :as json]
-            [clojure.test :as t]
-            [next.jdbc :as jdbc]))
+  (:require
+   [app.db :as db]
+   [app.products :as products]
+   [app.server :as server]
+   [app.system :as system]
+   [app.test-system :as test-system]
+   [clj-http.client :as http]
+   [clojure.data.json :as json]
+   [clojure.test :as t]
+   [next.jdbc :as jdbc]))
 
-;; TODO use random port for testing
 (defn with-system
   [f]
   (let [sys (test-system/init-test-system)]
@@ -35,8 +33,8 @@
                    :name           "Test Product"
                    :description    "This is a test product"
                    :price-in-cents 100
-                   :created-at     (Instant/now)
-                   :updated-at     (Instant/now)}
+                   :created-at     (db/instant-now)
+                   :updated-at     (db/instant-now)}
           request {:db          @test-system/*db*
                    :body-params product}]
       (t/is (= {:status 201
@@ -49,8 +47,8 @@
                    :name           "Test Product 1"
                    :description    "Hello, this is a test product"
                    :price-in-cents 100
-                   :created-at     (Instant/now)
-                   :updated-at     (Instant/now)}]
+                   :created-at     (db/instant-now)
+                   :updated-at     (db/instant-now)}]
       (products/create-product {:db          @test-system/*db*
                                 :body-params product}) ; Create a product for testing
       (t/is (= {:status 200
@@ -63,8 +61,8 @@
                    :name           "Test Product"
                    :description    "This is a test product"
                    :price-in-cents 100
-                   :created-at     (Instant/now)
-                   :updated-at     (Instant/now)}]
+                   :created-at     (db/instant-now)
+                   :updated-at     (db/instant-now)}]
       (products/create-product {:db          @test-system/*db*
                                 :body-params product}) ; Create a product for testing
       (t/is (= {:status 200
@@ -72,39 +70,48 @@
                (products/get-product {:db          @test-system/*db*
                                       :path-params {:id (.toString (:id product))}}))))))
 
-(defn millis
-  [t]
-  (cond
-    (inst? t)
-    (.truncatedTo t java.time.temporal.ChronoUnit/MILLIS)
-
-    (string? t) ;; parse string to Instant and truncate to millis
-    (try
-      (let [instant (Instant/parse t)]
-        (.truncatedTo instant java.time.temporal.ChronoUnit/MILLIS))
-      (catch Exception e
-        t))
-    :else t))
-
 (t/deftest post-create-product-test
   (t/testing "Send POST request to server to create a product"
-    (let [nowstr   (str (Instant/now))
-          product  {:id             (str (random-uuid))
-                    :name           "Test Product"
+    (let [product  {:name           "Test Product"
                     :description    "This is a test product"
-                    :price-in-cents 100
-                    :created-at     nowstr
-                    :updated-at     nowstr}
+                    :price-in-cents 100}
           url      (format "http://localhost:%s/v1/products" (server/get-port @test-system/*server*))
           response (http/post url
                               {:form-params  product
                                :content-type :json})
           result   (json/read-str (:body response)
-                                  :key-fn csk/->kebab-case-keyword)]
+                                  :key-fn keyword)]
+      ;; TODO Validate Schema
+      (t/is (= [:id :name :priceInCents :description :createdAt :updatedAt] (keys result)))
       (t/is (= 201 (:status response)))
-      (t/is (= (:id product) (:id result)))
+      (t/is (uuid? (parse-uuid (:id result))))
       (t/is (= (:name product) (:name result)))
       (t/is (= (:description product) (:description result)))
-      (t/is (= (:price-in-cents product) (:price-in-cents result)))
-      (t/is (= (millis (:created-at product)) (millis (:created-at result))))
-      (t/is (= (millis (:updated-at product)) (millis (:updated-at result)))))))
+      (t/is (= (:price-in-cents product) (:priceInCents result)))
+      (t/is (= (:createdAt result) (:updatedAt result))))))
+
+(t/deftest get-product-test
+  (t/testing "GET request to server to fetch a product by ID"
+    (let [now      (db/instant-now)
+          product  (db/create-product @test-system/*db*
+                                      {:id             (random-uuid)
+                                       :name           "Test Product"
+                                       :description    "This is a test product"
+                                       :price-in-cents 100
+                                       :created-at     now
+                                       :updated-at     now})
+          url      (format "http://localhost:%s/v1/products/%s" (server/get-port @test-system/*server*) (:id product))
+          response (http/get url
+                             {:accept :json})
+          result   (json/read-str (:body response)
+                                  :key-fn keyword)]
+      ;; TODO Validate Schema
+      ;; (t/is (malli/validate spec/ProductV1 result)  (-> spec/ProductV1 (malli/explain result) (me/humanize)))
+      (t/is (= [:id :name :priceInCents :description :createdAt :updatedAt] (keys result)))
+      (t/is (= 200 (:status response)))
+      (t/is (= (str (:id product)) (:id result)))
+      (t/is (= (:name product) (:name result)))
+      (t/is (= (:description product) (:description result)))
+      (t/is (= (:price-in-cents product) (:priceInCents result)))
+      (t/is (= (str (:created-at product)) (:createdAt result)))
+      (t/is (= (str (:updated-at product)) (:updatedAt result))))))

@@ -8,6 +8,12 @@
 ;; This is needed to read timestamps as instants from postgres
 (read-as-instant)
 
+(defn instant-now
+  "Postgres compatible java.time.Instant now"
+  []
+  (doto (java.time.Instant/now)
+    (.truncatedTo  java.time.temporal.ChronoUnit/MICROS)))
+
 (defn get-products
   "Fetches products from the postgres using next.jdbc"
   [db]
