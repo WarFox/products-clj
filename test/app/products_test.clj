@@ -3,27 +3,15 @@
    [app.db :as db]
    [app.products :as products]
    [app.server :as server]
-   [app.system :as system]
    [app.test-system :as test-system]
    [app.util.time :as time]
    [clj-http.client :as http]
    [clojure.data.json :as json]
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [next.jdbc :as jdbc]))
-
-(defn with-system
-  [f]
-  (let [sys (test-system/init-test-system)]
-    (f)
-    (system/halt! sys)))
+   [fixtures :refer [truncate-table with-system]]))
 
 (use-fixtures :once
   with-system)
-
-(defn truncate-table
-  [f]
-  (jdbc/execute! @test-system/*db* ["truncate table products"])
-  (f))
 
 (use-fixtures :each
   truncate-table)
