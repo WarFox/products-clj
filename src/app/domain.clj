@@ -1,30 +1,30 @@
 (ns app.domain
-  (:import
-   [java.time Instant]))
+  (:require
+   [app.util.time :as time]))
 
 (defn parse-inst-or
-  "Parses a string to an Instant or returns this if nil or invalid"
-  [s this]
+  "Parses `this` string to an Instant or returns `that` if nil or invalid. Returns `this` if it is an instant"
+  [this that]
   (cond
-    (nil? s)    this
-    (inst? s)   s
-    (string? s) (try
-                  (Instant/parse s)
-                  (catch Exception _ this))))
+    (nil? this)    that
+    (inst? this)   this
+    (string? this) (try
+                     (time/parse-instant this)
+                     (catch Exception _ that))))
 
 (defn parse-uuid-or
-  "Parses a string to a uuid or returns this if nil or invalid"
-  [s this]
+  "Parses `this` string to a uuid or returns that if nil or invalid. Returns `this` if it is a uuid"
+  [this that]
   (cond
-    (nil? s)    this
-    (uuid? s)   s
-    (string? s) (try
-                  (parse-uuid s)
-                  (catch Exception _ this))))
+    (nil? this)    that
+    (uuid? this)   this
+    (string? this) (try
+                     (parse-uuid this)
+                     (catch Exception _ that))))
 
 (defn ->Product
   [p]
-  (let [now (Instant/now)
+  (let [now         (time/instant-now :micros)
         random-uuid (random-uuid)]
     (-> p
         (update :id #(parse-uuid-or % random-uuid))

@@ -3,6 +3,7 @@
             [app.handler :as handler]
             [app.test-containers :as tc]
             [app.server :as server]
+            [app.util.time :as time]
             [app.migrations :as migrations]
             [integrant.core :as ig]
             [next.jdbc :as jdbc]))
@@ -39,8 +40,8 @@
                       :name           "Sample Product"
                       :price-in-cents 1999
                       :description    "This is a sample product"
-                      :created-at     (java.time.Instant/now)
-                      :updated-at     (java.time.Instant/now)}))
+                      :created-at     (time/instant-now :micros)
+                      :updated-at     (time/instant-now :micros)}))
 
 (defmethod ig/init-key :handler/run-app
   [_ {:keys [db]}]

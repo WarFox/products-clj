@@ -8,6 +8,7 @@
                  [clj-test-containers "0.7.4"]
                  [com.fasterxml.jackson.core/jackson-databind "2.18.3"]
                  [com.github.seancorfield/next.jdbc "1.3.1002"]
+                 [com.widdindustries/cljc.java-time "0.1.21"]
                  [integrant/integrant "0.13.1"]
                  [integrant/repl  "0.4.0"]
                  [metosin/muuntaja "0.6.11"]

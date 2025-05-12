@@ -4,6 +4,7 @@
    [app.products :as products]
    [app.server :as server]
    [app.system :as system]
+   [app.util.time :as time]
    [app.test-system :as test-system]
    [clj-http.client :as http]
    [clojure.data.json :as json]
@@ -33,8 +34,8 @@
                    :name           "Test Product"
                    :description    "This is a test product"
                    :price-in-cents 100
-                   :created-at     (db/instant-now)
-                   :updated-at     (db/instant-now)}
+                   :created-at     (time/instant-now :micros)
+                   :updated-at     (time/instant-now :micros)}
           request {:db          @test-system/*db*
                    :body-params product}]
       (t/is (= {:status 201
@@ -47,8 +48,8 @@
                    :name           "Test Product 1"
                    :description    "Hello, this is a test product"
                    :price-in-cents 100
-                   :created-at     (db/instant-now)
-                   :updated-at     (db/instant-now)}]
+                   :created-at     (time/instant-now :micros)
+                   :updated-at     (time/instant-now :micros)}]
       (products/create-product {:db          @test-system/*db*
                                 :body-params product}) ; Create a product for testing
       (t/is (= {:status 200
@@ -61,8 +62,8 @@
                    :name           "Test Product"
                    :description    "This is a test product"
                    :price-in-cents 100
-                   :created-at     (db/instant-now)
-                   :updated-at     (db/instant-now)}]
+                   :created-at     (time/instant-now :micros)
+                   :updated-at     (time/instant-now :micros)}]
       (products/create-product {:db          @test-system/*db*
                                 :body-params product}) ; Create a product for testing
       (t/is (= {:status 200
@@ -92,7 +93,7 @@
 
 (t/deftest get-product-test
   (t/testing "GET request to server to fetch a product by ID"
-    (let [now      (db/instant-now)
+    (let [now      (time/instant-now :micros)
           product  (db/create-product @test-system/*db*
                                       {:id             (random-uuid)
                                        :name           "Test Product"
