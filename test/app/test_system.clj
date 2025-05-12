@@ -1,10 +1,10 @@
 (ns app.test-system
-  (:require [app.config :as config]
-            [app.server :as server]
-            [app.system] ;; make sure app system is loaded
-            [app.test-containers :as tc]
-            [integrant.core :as ig]
-            [next.jdbc :as jdbc]))
+  (:require
+   [app.config :as config]
+   [app.server :as server]
+   [app.system] ;; make sure app system is loaded
+   [integrant.core :as ig]
+   [next.jdbc :as jdbc]))
 
 ;; Test System
 (def ^:dynamic *server* (atom nil))

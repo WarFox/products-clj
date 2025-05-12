@@ -1,5 +1,6 @@
 (ns app.server
-  (:require [ring.adapter.jetty :refer [run-jetty]]))
+  (:require
+   [ring.adapter.jetty :refer [run-jetty]]))
 
 (defn get-port
   [^org.eclipse.jetty.server.Handler server]

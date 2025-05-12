@@ -1,7 +1,8 @@
 (ns frontend.components.products
-  (:require [goog.string :as gstring]
-            [re-frame.core :as re-frame]
-            [frontend.events :as events]))
+  (:require
+   [goog.string :as gstring]
+   [re-frame.core :as re-frame]
+   [frontend.events :as events]))
 
 (defn product-card
   [{:keys [id name description price-in-cents]}]

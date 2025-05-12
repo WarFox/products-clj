@@ -1,10 +1,11 @@
 (ns app.products
   "Controller for Products domain, works with request objects,
   Converts requests to domain objects"
-  (:require [app.db :as db]
-            [app.domain :as domain]
-            [app.services.product :as service]
-            [app.spec :as spec]))
+  (:require
+   [app.db :as db]
+   [app.domain :as domain]
+   [app.services.product :as service]
+   [app.spec :as spec]))
 
 (defn get-products
   "Fetches products from the postgres"

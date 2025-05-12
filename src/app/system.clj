@@ -1,12 +1,13 @@
 (ns app.system
-  (:require [app.db :as db]
-            [app.handler :as handler]
-            [app.test-containers :as tc]
-            [app.server :as server]
-            [app.util.time :as time]
-            [app.migrations :as migrations]
-            [integrant.core :as ig]
-            [next.jdbc :as jdbc]))
+  (:require
+   [app.db :as db]
+   [app.handler :as handler]
+   [app.test-containers :as tc]
+   [app.server :as server]
+   [app.util.time :as time]
+   [app.migrations :as migrations]
+   [integrant.core :as ig]
+   [next.jdbc :as jdbc]))
 
 (defmethod ig/init-key :system/env
   [_ env]

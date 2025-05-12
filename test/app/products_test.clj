@@ -4,11 +4,11 @@
    [app.products :as products]
    [app.server :as server]
    [app.system :as system]
-   [app.util.time :as time]
    [app.test-system :as test-system]
+   [app.util.time :as time]
    [clj-http.client :as http]
    [clojure.data.json :as json]
-   [clojure.test :as t]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [next.jdbc :as jdbc]))
 
 (defn with-system
@@ -17,7 +17,7 @@
     (f)
     (system/halt! sys)))
 
-(t/use-fixtures :once
+(use-fixtures :once
   with-system)
 
 (defn truncate-table
@@ -25,11 +25,11 @@
   (jdbc/execute! @test-system/*db* ["truncate table products"])
   (f))
 
-(t/use-fixtures :each
+(use-fixtures :each
   truncate-table)
 
-(t/deftest create-product-test
-  (t/testing "Create a product"
+(deftest create-product-test
+  (testing "Create a product"
     (let [product {:id             (random-uuid)
                    :name           "Test Product"
                    :description    "This is a test product"
@@ -38,12 +38,12 @@
                    :updated-at     (time/instant-now :micros)}
           request {:db          @test-system/*db*
                    :body-params product}]
-      (t/is (= {:status 201
-                :body   product}
-               (products/create-product request))))))
+      (is (= {:status 201
+              :body   product}
+             (products/create-product request))))))
 
-(t/deftest get-products-test
-  (t/testing "Get all products"
+(deftest get-products-test
+  (testing "Get all products"
     (let [product {:id             (random-uuid)
                    :name           "Test Product 1"
                    :description    "Hello, this is a test product"
@@ -52,12 +52,12 @@
                    :updated-at     (time/instant-now :micros)}]
       (products/create-product {:db          @test-system/*db*
                                 :body-params product}) ; Create a product for testing
-      (t/is (= {:status 200
-                :body   [product]}
-               (products/get-products {:db @test-system/*db*}))))))
+      (is (= {:status 200
+              :body   [product]}
+             (products/get-products {:db @test-system/*db*}))))))
 
-(t/deftest get-product-by-id
-  (t/testing "Get product by id"
+(deftest get-product-by-id
+  (testing "Get product by id"
     (let [product {:id             (random-uuid)
                    :name           "Test Product"
                    :description    "This is a test product"
@@ -66,13 +66,13 @@
                    :updated-at     (time/instant-now :micros)}]
       (products/create-product {:db          @test-system/*db*
                                 :body-params product}) ; Create a product for testing
-      (t/is (= {:status 200
-                :body   product}
-               (products/get-product {:db          @test-system/*db*
-                                      :path-params {:id (.toString (:id product))}}))))))
+      (is (= {:status 200
+              :body   product}
+             (products/get-product {:db          @test-system/*db*
+                                    :path-params {:id (.toString (:id product))}}))))))
 
-(t/deftest post-create-product-test
-  (t/testing "Send POST request to server to create a product"
+(deftest post-create-product-test
+  (testing "Send POST request to server to create a product"
     (let [product  {:name           "Test Product"
                     :description    "This is a test product"
                     :price-in-cents 100}
@@ -83,16 +83,16 @@
           result   (json/read-str (:body response)
                                   :key-fn keyword)]
       ;; TODO Validate Schema
-      (t/is (= [:id :name :priceInCents :description :createdAt :updatedAt] (keys result)))
-      (t/is (= 201 (:status response)))
-      (t/is (uuid? (parse-uuid (:id result))))
-      (t/is (= (:name product) (:name result)))
-      (t/is (= (:description product) (:description result)))
-      (t/is (= (:price-in-cents product) (:priceInCents result)))
-      (t/is (= (:createdAt result) (:updatedAt result))))))
+      (is (= [:id :name :priceInCents :description :createdAt :updatedAt] (keys result)))
+      (is (= 201 (:status response)))
+      (is (uuid? (parse-uuid (:id result))))
+      (is (= (:name product) (:name result)))
+      (is (= (:description product) (:description result)))
+      (is (= (:price-in-cents product) (:priceInCents result)))
+      (is (= (:createdAt result) (:updatedAt result))))))
 
-(t/deftest get-product-test
-  (t/testing "GET request to server to fetch a product by ID"
+(deftest get-product-test
+  (testing "GET request to server to fetch a product by ID"
     (let [now      (time/instant-now :micros)
           product  (db/create-product @test-system/*db*
                                       {:id             (random-uuid)
@@ -107,12 +107,12 @@
           result   (json/read-str (:body response)
                                   :key-fn keyword)]
       ;; TODO Validate Schema
-      ;; (t/is (malli/validate spec/ProductV1 result)  (-> spec/ProductV1 (malli/explain result) (me/humanize)))
-      (t/is (= [:id :name :priceInCents :description :createdAt :updatedAt] (keys result)))
-      (t/is (= 200 (:status response)))
-      (t/is (= (str (:id product)) (:id result)))
-      (t/is (= (:name product) (:name result)))
-      (t/is (= (:description product) (:description result)))
-      (t/is (= (:price-in-cents product) (:priceInCents result)))
-      (t/is (= (str (:created-at product)) (:createdAt result)))
-      (t/is (= (str (:updated-at product)) (:updatedAt result))))))
+      ;; (is (malli/validate spec/ProductV1 result)  (-> spec/ProductV1 (malli/explain result) (me/humanize)))
+      (is (= [:id :name :priceInCents :description :createdAt :updatedAt] (keys result)))
+      (is (= 200 (:status response)))
+      (is (= (str (:id product)) (:id result)))
+      (is (= (:name product) (:name result)))
+      (is (= (:description product) (:description result)))
+      (is (= (:price-in-cents product) (:priceInCents result)))
+      (is (= (str (:created-at product)) (:createdAt result)))
+      (is (= (str (:updated-at product)) (:updatedAt result))))))

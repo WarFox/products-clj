@@ -1,7 +1,8 @@
 (ns app.core
   (:gen-class)
-  (:require [app.system :as system]
-            [app.config :as config]))
+  (:require
+   [app.system :as system]
+   [app.config :as config]))
 
 (defonce system (atom nil))
 
@@ -17,16 +18,14 @@
 
 ;; log uncaught exceptions in threads
 (Thread/setDefaultUncaughtExceptionHandler
-  (fn [thread ex]
-    (println {:what      :uncaught-exception
-              :exception ex
-              :where     (str "Uncaught exception on" (.getName thread))})))
-
+ (fn [thread ex]
+   (println {:what      :uncaught-exception
+             :exception ex
+             :where     (str "Uncaught exception on" (.getName thread))})))
 
 (defn stop-app []
   ((or (:stop defaults) (fn [])))
   (some-> (deref system) (system/halt!)))
-
 
 (defn start-app [& [params]]
   (println "starting app", params)

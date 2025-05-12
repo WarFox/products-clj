@@ -1,18 +1,19 @@
 (ns app.handler
-  (:require [app.products :as products]
-            [app.malli.registry] ;; enable registry
-            [camel-snake-kebab.core :as csk]
-            [muuntaja.core :as m]
-            [reitit.coercion.malli :as malli]
-            [reitit.core :as r]
-            [reitit.ring :as ring]
-            [reitit.ring.coercion :as coercion]
-            [reitit.ring.middleware.muuntaja :as muuntaja]
-            [reitit.ring.middleware.parameters :as parameters]
-            [reitit.ring.spec :as rrs]
-            [ring.middleware.cors :as cors]
-            [ring.middleware.keyword-params :as params]
-            [ring.middleware.stacktrace :as stacktrace]))
+  (:require
+   [app.malli.registry] ;; enable registry
+   [app.products :as products]
+   [camel-snake-kebab.core :as csk]
+   [muuntaja.core :as m]
+   [reitit.coercion.malli :as malli]
+   [reitit.core :as r]
+   [reitit.ring :as ring]
+   [reitit.ring.coercion :as coercion]
+   [reitit.ring.middleware.muuntaja :as muuntaja]
+   [reitit.ring.middleware.parameters :as parameters]
+   [reitit.ring.spec :as rrs]
+   [ring.middleware.cors :as cors]
+   [ring.middleware.keyword-params :as params]
+   [ring.middleware.stacktrace :as stacktrace]))
 
 (def routes
   [["/v1" {:name :version1}

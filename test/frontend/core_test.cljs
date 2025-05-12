@@ -1,6 +1,6 @@
 (ns frontend.core-test
-  (:require [cljs.test :refer-macros [deftest testing is]]
-            [frontend.core :as core]))
+  (:require
+   [cljs.test :refer-macros [deftest is testing]]))
 
 (deftest fake-test
   (testing "fake description"

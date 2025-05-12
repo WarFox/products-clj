@@ -1,8 +1,8 @@
 (ns app.core-test
-  (:require [clojure.test :refer :all]
-            [next.jdbc :as jdbc]
-            [clj-test-containers.core :as tc]
-            [app.core :refer :all]))
+  (:require
+   [clj-test-containers.core :as tc]
+   [clojure.test :refer [deftest is testing]]
+   [next.jdbc :as jdbc]))
 
 (deftest db-integration-test
   (testing "A simple PostgreSQL integration test"
