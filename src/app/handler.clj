@@ -1,7 +1,7 @@
 (ns app.handler
   (:require
    [app.malli.registry] ;; enable registry
-   [app.products :as products]
+   [app.products.routes :as products]
    [camel-snake-kebab.core :as csk]
    [muuntaja.core :as m]
    [reitit.coercion.malli :as malli]

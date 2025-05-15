@@ -1,4 +1,4 @@
-(ns app.services.product
+(ns app.products.services
   "Service functions to work with Product domain, has business logic
    Validate domain model
   {:success {}

@@ -1,13 +1,10 @@
-(ns app.products
-  "Controller for Products domain, works with request objects,
-  Converts requests to domain objects"
+(ns app.products.handlers
   (:require
    [app.db :as db]
    [app.domain :as domain]
-   [app.services.product :as service]
-   [app.spec :as spec]))
+   [app.products.services :as service]))
 
-(defn get-products
+(defn list-products
   "Fetches products from the postgres"
   [{:keys [db]}]
   (let [{:keys [success failure]} (service/get-products db)]
@@ -56,22 +53,3 @@
       {:status 204}
       {:status 404
        :body   "Product not found"})))
-
-(def routes
-  [["/products"
-    {:name ::products
-     :get  {:summary   "List products"
-            :responses {200 {:body spec/ProductV1List}}
-            :handler   get-products}
-     :post {:summary    "Create new Product"
-            :parameters {:body spec/ProductV1Request}
-            :responses  {201 {:body spec/ProductV1}}
-            :handler    create-product}}]
-   ["/products/:id"
-    {:name   ::product-id
-     :get    {:summary    "Get Product by uuid"
-              :parameters {:path {:id uuid?}}
-              :handler    get-product
-              :responses  {200 {:body spec/ProductV1}}}
-     :delete {:parameters {:path {:id uuid?}}
-              :handler    delete-product}}]])
