@@ -10,12 +10,12 @@
 (defn get-products
   "Fetches products from the postgres"
   [{:keys [db]}]
-  (let [products (db/get-products db)]
-    (if (empty? products)
-      {:status 404
-       :body   "No products found"}
+  (let [{:keys [success failure]} (service/get-products db)]
+    (if success
       {:status 200
-       :body   products})))
+       :body   success}
+      {:status 500
+       :body   failure})))
 
 (defn create-product
   "Creates a new product in the postgres"
@@ -32,12 +32,19 @@
 (defn get-product
   "Fetches a product by ID from the postgres"
   [{:keys [db path-params]}]
-  (let [id                        (-> path-params :id parse-uuid)
-        {:keys [success failure]} (service/get-product db id)]
-    (if success
+  (let [id                                  (-> path-params :id parse-uuid)
+        {:keys [success not-found failure]} (service/get-product db id)]
+    (cond
+      success
       {:status 200
        :body   success}
+
+      not-found
       {:status 404
+       :body   not-found}
+
+      failure
+      {:status 500
        :body   failure})))
 
 (defn delete-product

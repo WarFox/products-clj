@@ -1,8 +1,8 @@
 (ns app.db-test
   (:require
-   [app.db :as sut]
-   [app.util.time :as time]
+   [app.db :as db]
    [app.test-system :as test-system]
+   [app.util.time :as time]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [fixtures :refer [with-db truncate-table]]))
 
@@ -21,6 +21,6 @@
                    :created-at     (time/instant-now :micros)
                    :updated-at     (time/instant-now :micros)}]
       (is (= product
-             (sut/create-product @test-system/*db* product)))
+             (db/create-product @test-system/*db* product)))
       (is (= product
-             (sut/get-product @test-system/*db* (:id product)))))))
+             (db/get-product @test-system/*db* (:id product)))))))
