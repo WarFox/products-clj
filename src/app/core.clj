@@ -30,11 +30,12 @@
 (defn start-app [& [params]]
   (println "starting app", params)
   ((or (:start params) (:start defaults) (fn [])))
-  (->> (config/config (or (:opts params) (:opts defaults) {}))
+  (->> (config/system-config (or (:opts params) (:opts defaults) {}))
        (system/init)
        (reset! system)))
 
-(defn -main [& _]
+(defn -main [& args]
   ((or (:init defaults) (fn [])))
-  (start-app {:opts {:profile :dev}})
+  (let [profile (if (some #{"--dev"} args) :dev :prod)]
+    (start-app {:opts {:profile profile}}))
   (.addShutdownHook (Runtime/getRuntime) (Thread. (fn [] (stop-app) (shutdown-agents)))))

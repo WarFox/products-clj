@@ -2,7 +2,7 @@
   (:require
    [app.config :as config]
    [app.server :as server]
-   [app.system] ;; make sure app system is loaded
+   [app.system :as system]
    [integrant.core :as ig]
    [next.jdbc :as jdbc]))
 
@@ -11,11 +11,12 @@
 
 (def ^:dynamic *db* (atom nil))
 
-(defmethod ig/init-key :adapter/jetty
+;; Override the init-key methods for the test system
+(defmethod ig/init-key :app.server/jetty
   [_ {:keys [handler port]}]
   (reset! *server* (server/start! handler port)))
 
-(defmethod ig/init-key :db/connection
+(defmethod ig/init-key :app.db/connection
   [_ {:keys [db-spec test-container]}]
   (let [mapped-ports (:mapped-ports test-container)
         db-spec      (update db-spec :port #(get mapped-ports % %))]
@@ -24,11 +25,12 @@
 (defn init-test-system
   "Initialize the system."
   []
-  (let [config (assoc-in (config/config {:profile :dev})
-                         [:adapter/jetty :port] 0)]
-    (ig/init config)))
+  (let [config (config/system-config {:profile :test})]
+    (system/init config)))
 
 (defn init-db
   []
-  (ig/init (config/config {:profile :dev})
-           [:test/container :db/spec :db/connection :db/initialize]))
+  (let [config (config/system-config {:profile :test})]
+    (system/init
+     config
+     [:app.test/container :app.db/spec :app.db/connection :app.db/initialize])))

@@ -1,0 +1,36 @@
+{:app.system/env
+ #profile {:dev  :dev
+           :test :test
+           :prod :prod}
+
+ :app.db/spec
+ {:dbtype   "postgres"
+  :dbname   "products"
+  :port     5432
+  :user     #or [#env DB_USER "products"]
+  :password #or [#env DB_PASSWORD "products"]
+  :host     #or [#env DB_HOST "localhost"]}
+
+ :app.test/container
+ #profile {:dev  {:db-spec #ig/ref :app.db/spec}
+           :test {:db-spec #ig/ref :app.db/spec}
+           :prod nil}
+
+ :app.db/connection
+ #profile {:dev  {:db-spec        #ig/ref :app.db/spec
+                  :test-container #ig/ref :app.test/container}
+           :test {:db-spec        #ig/ref :app.db/spec
+                  :test-container #ig/ref :app.test/container}
+           :prod {:db-spec #ig/ref :app.db/spec}}
+
+ :app.db/initialize
+ {:db #ig/ref :app.db/connection}
+
+ :app.handler/api
+ {:db #ig/ref :app.db/connection}
+
+ :app.server/jetty
+ {:handler #ig/ref :app.handler/api
+  :port    #profile {:dev  #long #or [#env PORT 3000]
+                     :test #long #or [#env PORT 0];; random port for testing
+                     :prod #long #or [#env PORT 8080]}}}

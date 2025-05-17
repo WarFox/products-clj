@@ -1,9 +1,7 @@
 (ns app.products-test
   (:require
    [app.db :as db]
-   [app.products.handlers :as products]
    [app.server :as server]
-   [app.spec :as spec]
    [app.test-system :as test-system]
    [app.util.time :as time]
    [clj-http.client :as http]

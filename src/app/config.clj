@@ -9,7 +9,9 @@
   [_opts _tag value]
   (ig/ref value))
 
-(defn config
+(def ^:const system-filename "system.edn")
+
+(defn system-config
   [options]
   (aero/read-config
-   (io/resource "config.edn") options))
+   (io/resource system-filename) options))

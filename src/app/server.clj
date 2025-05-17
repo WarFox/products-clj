@@ -16,4 +16,5 @@
 
 (defn stop!
   [server]
-  (.stop server))
+  (.stop server)
+  (println "Server stopped"))
