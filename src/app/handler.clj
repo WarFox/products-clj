@@ -3,6 +3,7 @@
    [app.malli.registry] ;; enable registry
    [app.products.routes :as products]
    [camel-snake-kebab.core :as csk]
+   [integrant.core :as ig]
    [muuntaja.core :as m]
    [reitit.coercion.malli :as malli]
    [reitit.core :as r]
@@ -62,6 +63,10 @@
                              stacktrace/wrap-stacktrace-log]}})
    (ring/routes
     (ring/create-default-handler))))
+
+(defmethod ig/init-key :app.handler/api
+  [_ {:keys [db]}]
+  (handler db))
 
 (comment
   (r/router-name

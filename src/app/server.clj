@@ -1,5 +1,6 @@
 (ns app.server
   (:require
+   [integrant.core :as ig]
    [ring.adapter.jetty :refer [run-jetty]]))
 
 (defn get-port
@@ -18,3 +19,11 @@
   [server]
   (.stop server)
   (println "Server stopped"))
+
+(defmethod ig/init-key :app.server/jetty
+  [_ {:keys [handler port]}]
+  (start! handler port))
+
+(defmethod ig/halt-key! :app.server/jetty
+  [_ server]
+  (stop! server))

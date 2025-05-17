@@ -1,5 +1,8 @@
 (ns app.db
   (:require
+   [app.migrations :as migrations]
+   [app.util.time :as time]
+   [integrant.core :as ig]
    [next.jdbc :as jdbc]
    [next.jdbc.date-time :refer [read-as-instant]]
    [next.jdbc.plan :as plan]
@@ -33,3 +36,26 @@
   "Deletes a product by ID from the postgres using next.jdbc"
   [db id]
   (sql/delete! db :products {:id id}))
+
+(defmethod ig/init-key :app.db/spec
+  [_ opts]
+  opts)
+
+(defmethod ig/init-key :app.db/connection
+  [_ {:keys [db-spec test-container]}]
+  (let [mapped-ports (:mapped-ports test-container)
+        db-spec      (update db-spec :port #(get mapped-ports % %))]
+    (println db-spec)
+    (jdbc/get-datasource db-spec)))
+
+(defmethod ig/init-key :app.db/initialize
+  [_ {:keys [db]}]
+  (println "Initializing database" db)
+  (migrations/migrate db)
+  (create-product db
+                  {:id             (random-uuid)
+                   :name           "Sample Product"
+                   :price-in-cents 1999
+                   :description    "This is a sample product"
+                   :created-at     (time/instant-now :micros)
+                   :updated-at     (time/instant-now :micros)}))
