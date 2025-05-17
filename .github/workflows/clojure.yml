@@ -60,3 +60,6 @@ jobs:
 
       - name: Run clj-kondo
         run: lein clj-kondo --lint src test
+
+      - name: Run uberjar
+        run: lein uberjar
