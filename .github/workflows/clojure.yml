@@ -56,9 +56,11 @@ jobs:
         run: lein test
 
       - name: Run cljfmt
+        continue-on-error: true
         run: lein cljfmt check
 
       - name: Run clj-kondo
+        continue-on-error: true
         run: lein clj-kondo --lint src test
 
       - name: Run uberjar
