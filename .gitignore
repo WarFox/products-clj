@@ -28,3 +28,6 @@ pom.xml.asc
 
 # IntelliJ
 /.idea/
+
+/.clj-kondo/
+/.lsp/
