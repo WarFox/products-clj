@@ -1,6 +1,5 @@
 (ns app.db
   (:require
-   [app.migrations :as migrations]
    [app.util.time :as time]
    [integrant.core :as ig]
    [next.jdbc :as jdbc]
@@ -45,17 +44,15 @@
   [_ {:keys [db-spec test-container]}]
   (let [mapped-ports (:mapped-ports test-container)
         db-spec      (update db-spec :port #(get mapped-ports % %))]
-    (println db-spec)
     (jdbc/get-datasource db-spec)))
 
-(defmethod ig/init-key :app.db/initialize
+(defmethod ig/init-key :app.db/seed
   [_ {:keys [db]}]
-  (println "Initializing database" db)
-  (migrations/migrate db)
-  (create-product db
-                  {:id             (random-uuid)
-                   :name           "Sample Product"
-                   :price-in-cents 1999
-                   :description    "This is a sample product"
-                   :created-at     (time/instant-now :micros)
-                   :updated-at     (time/instant-now :micros)}))
+  (when db
+    (create-product db
+                    {:id             (random-uuid)
+                     :name           "Sample Product"
+                     :price-in-cents 1999
+                     :description    "This is a sample product"
+                     :created-at     (time/instant-now :micros)
+                     :updated-at     (time/instant-now :micros)})))

@@ -33,4 +33,4 @@
   (let [config (config/system-config {:profile :test})]
     (system/init
      config
-     [:app.test/container :app.db/spec :app.db/connection :app.db/initialize])))
+     [:app.test/container :app.db/spec :app.db/connection :app.migrations/flyway])))

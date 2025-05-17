@@ -2,6 +2,7 @@
   (:require
    [app.db]
    [app.handler]
+   [app.migrations]
    [app.server]
    [app.test-containers :as tc]
    [integrant.core :as ig]))
@@ -12,7 +13,8 @@
 
 (defmethod ig/init-key :app.test/container
   [_ {:keys [db-spec]}]
-  (tc/postgres-container db-spec))
+  (when db-spec
+    (tc/postgres-container db-spec)))
 
 (defmethod ig/halt-key! :app.test/container
   [_ container]

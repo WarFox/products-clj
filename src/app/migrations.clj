@@ -1,7 +1,9 @@
 (ns app.migrations
   (:import
    [org.flywaydb.core Flyway]
-   [org.flywaydb.core.api.configuration Configuration]))
+   [org.flywaydb.core.api.configuration Configuration])
+  (:require
+   [integrant.core :as ig]))
 
 (defn configuration
   ^Configuration [db]
@@ -19,3 +21,7 @@
     (println "Running migrations")
     (.migrate flyway)
     (println "Completed migrations")))
+
+(defmethod ig/init-key :app.migrations/flyway
+  [_ {:keys [db]}]
+  (migrate db))

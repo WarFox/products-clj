@@ -23,8 +23,14 @@
                   :test-container #ig/ref :app.test/container}
            :prod {:db-spec #ig/ref :app.db/spec}}
 
- :app.db/initialize
+ :app.migrations/flyway
  {:db #ig/ref :app.db/connection}
+
+ :app.db/seed
+ #profile {:dev {:db #ig/ref :app.db/connection
+                 :d_ #ig/ref :app.migrations/flyway}
+           :test nil
+           :prod nil}
 
  :app.handler/api
  {:db #ig/ref :app.db/connection}
