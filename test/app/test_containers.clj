@@ -21,6 +21,7 @@
   (println "Stopping container")
   (tc/stop! container))
 
+;; overriding :app.test/container
 (defmethod ig/init-key :app.test/container
   [_ {:keys [db-spec]}]
   (when db-spec
