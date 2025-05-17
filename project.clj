@@ -5,7 +5,6 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[aero "1.1.6"]
                  [camel-snake-kebab "0.4.3"]
-                 [clj-test-containers "0.7.4"]
                  [com.fasterxml.jackson.core/jackson-databind "2.18.3"]
                  [com.github.seancorfield/next.jdbc "1.3.1002"]
                  [com.widdindustries/cljc.java-time "0.1.21"]
@@ -34,5 +33,6 @@
              {:dependencies [[cheshire "6.0.0"]
                              [clj-http "3.13.0"]
                              [clj-kondo "2025.04.07"]
+                             [clj-test-containers "0.7.4"]
                              [org.clojure/data.json "2.5.1"]]
               :aliases {"clj-kondo" ["run" "-m" "clj-kondo.main"]}}})
