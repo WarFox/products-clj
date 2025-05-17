@@ -8,16 +8,16 @@
    (:name db)))
 
 (re-frame/reg-sub
-  ::products
+ ::products
  (fn [db]
-    (:products db)))
+   (:products db)))
 
 (re-frame/reg-sub
-  ::new-product
-  (fn [db]
-    (:new-product db)))
+ ::new-product
+ (fn [db]
+   (:new-product db)))
 
 (re-frame/reg-sub
-  ::loading?
-  (fn [db]
-    (:loading? db)))
+ ::loading?
+ (fn [db]
+   (:loading? db)))
