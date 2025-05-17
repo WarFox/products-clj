@@ -23,7 +23,8 @@
                  [ring/ring-devel "1.14.1"]
                  [ring/ring-jetty-adapter "1.14.1"]]
   :main ^:skip-aot app.core
-  :plugins [[lein-ring "0.12.6"]]
+  :plugins [[lein-ring "0.12.6"]
+            [dev.weavejester/lein-cljfmt "0.13.1"]]
   :target-path "target/%s"
   :ring {:handler app.handler/handler}
   :profiles {:uberjar
@@ -32,4 +33,6 @@
              :dev
              {:dependencies [[cheshire "6.0.0"]
                              [clj-http "3.13.0"]
-                             [org.clojure/data.json "2.5.1"]]}})
+                             [clj-kondo "2025.04.07"]
+                             [org.clojure/data.json "2.5.1"]]
+              :aliases {"clj-kondo" ["run" "-m" "clj-kondo.main"]}}})
