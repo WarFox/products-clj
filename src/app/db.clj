@@ -49,6 +49,7 @@
 (defmethod ig/init-key :app.db/seed
   [_ {:keys [db]}]
   (when db
+    (println "Seeding database with initial data")
     (create-product db
                     {:id             (random-uuid)
                      :name           "Sample Product"

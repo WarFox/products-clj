@@ -1,5 +1,6 @@
 (ns app.test-containers
   (:require
+   [integrant.core :as ig]
    [clj-test-containers.core :as tc]))
 
 (defn postgres-container
@@ -19,3 +20,12 @@
   [container]
   (println "Stopping container")
   (tc/stop! container))
+
+(defmethod ig/init-key :app.test/container
+  [_ {:keys [db-spec]}]
+  (when db-spec
+    (postgres-container db-spec)))
+
+(defmethod ig/halt-key! :app.test/container
+  [_ container]
+  (stop! container))
