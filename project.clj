@@ -26,6 +26,7 @@
             [dev.weavejester/lein-cljfmt "0.13.1"]]
   :target-path "target/%s"
   :ring {:handler app.handler/handler}
+  :source-paths ["src/clj" "src/cljc" "test/clj" "test/cljc"]
   :profiles {:uberjar
              {:aot      :all
               :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}

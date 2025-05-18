@@ -18,7 +18,7 @@
 (defn migrate
   [db]
   (let [flyway (flyway db)]
-    (println "Running migrations")
+    (println "Running migrations" db)
     (.migrate flyway)
     (println "Completed migrations")))
 
