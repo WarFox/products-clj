@@ -2,12 +2,12 @@
   (:require
    [re-frame.core :as re-frame]
    [frontend.db :as db]
-   [frontend.domain :as domain]
+   [app.spec :as spec]
    [ajax.core :as ajax]
    [day8.re-frame.http-fx]
+   [malli.core :as malli]
    [camel-snake-kebab.core :as csk]
-   [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [cljs.spec.alpha :as s]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]))
 
 (def backend-uri "http://localhost:3000/v1/products")
 
@@ -54,10 +54,11 @@
  ::add-product
  (fn-traced
   [{:keys [db]} [_ product]]
-  (s/valid? ::domain/product product)
+  (malli/validate spec/ProductV1Request product)
   {;; we return a map of (side) effects
    :http-xhrio {:method          :post
                 :uri            backend-uri
+                :timeout         1000
                 :params          (update-keys product csk/->camelCase)
                 :format          (ajax/json-request-format)
                 :response-format (ajax/json-response-format {:keywords? true})
