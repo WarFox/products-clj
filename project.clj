@@ -26,7 +26,8 @@
             [dev.weavejester/lein-cljfmt "0.13.1"]]
   :target-path "target/%s"
   :ring {:handler app.handler/handler}
-  :source-paths ["src/clj" "src/cljc" "test/clj" "test/cljc"]
+  :source-paths ["src/clj" "src/cljc"]
+  :test-paths ["test/clj" "test/cljc"]
   :profiles {:uberjar
              {:aot      :all
               :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}
@@ -36,4 +37,4 @@
                              [clj-kondo "2025.04.07"]
                              [clj-test-containers "0.7.4"]
                              [org.clojure/data.json "2.5.1"]]
-              :aliases {"clj-kondo" ["run" "-m" "clj-kondo.main"]}}})
+              :aliases      {"clj-kondo" ["run" "-m" "clj-kondo.main"]}}})
