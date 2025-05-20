@@ -3,8 +3,15 @@
 This is a full stack Clojure/ClojureScript application that allows users to
 manage products. The app is built using the following technologies:
 
-- Clojure - [Ring](https://github.com/ring-clojure/ring), [Reitit](https://github.com/metosin/reitit), [next.jdbc](https://github.com/seancorfield/next-jdbc/), [Integrant](https;//github.com/weavejester/integrant)
-- ClojureScript - [re-frame](https://day8.github.io/re-frame/), [Reagent](https://reagent-project.github.io/), [react](https://react.dev/)
+- Backend: Clojure - [Ring](https://github.com/ring-clojure/ring),
+  [Reitit](https://github.com/metosin/reitit),
+  [next.jdbc](https://github.com/seancorfield/next-jdbc/),
+  [Integrant](https;//github.com/weavejester/integrant), [Muuntaja](https://cljdoc.org/d/metosin/muuntaja/)
+- Frontend: ClojureScript - [re-frame](https://day8.github.io/re-frame/),
+  [Reagent](https://reagent-project.github.io/), [react](https://react.dev/), [tailwindcss](https://tailwindcss.com/)
+- Shared: [Malli](https://cljdoc.org/d/metosin/malli/) Schemas
+- Database: [PosgreSQL](https://www.postgresql.org/), [Flyway](https://flywaydb.org/) for Migrations
+- Testing: Test Containers using [testcontainers-clj](https://github.com/testcontainers/testcontainers-clj)
 
 ![Products](https://gist.githubusercontent.com/WarFox/91fff34911d1080a66723770cb12c4e7/raw/ec78e55cb4f834fd3e4ea1c57f0ee521f9120384/products-app.png)
 
