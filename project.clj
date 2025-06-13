@@ -15,6 +15,7 @@
                  [metosin/reitit-middleware "0.8.0"]
                  [metosin/reitit-ring "0.8.0"]
                  [org.clojure/clojure "1.12.0"]
+                 [org.clojure/tools.logging "1.3.0"]
                  [org.flywaydb/flyway-database-postgresql "11.8.0"]
                  [org.postgresql/postgresql "42.7.5"]
                  [ring-cors "0.1.13"]

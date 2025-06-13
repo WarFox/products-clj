@@ -1,45 +1,52 @@
 (ns app.products.services
-  "Service functions to work with Product domain, has business logic
-   Validate domain model
-  {:success {}
-   :failure {}}
-   Log errors"
+  "Service functions to work with Product domain, has business logic and validation"
   (:require
    [app.db :as db]
    [app.spec :as spec]
    [malli.core :as malli]))
 
 (defn create-product
+  "Creates a new product in the database"
   [db product]
   (try
     (malli/assert spec/ProductV1 product)
-    {:success (db/create-product db product)}
+    (db/create-product db product)
+    (catch clojure.lang.ExceptionInfo e
+      (throw (ex-info "Invalid product data"
+                     {:type :system.exception/business
+                      :product product
+                      :cause e})))
     (catch Exception e
-      {:failure
-       {:message "Failed to create product"
-        :product product
-        :reason e}})))
+      (throw (ex-info "Failed to create product"
+                     {:type :system.exception/internal
+                      :product product
+                      :cause e})))))
 
 (defn get-products
+  "Fetches all products from the database"
   [db]
   (try
-    {:success (db/get-products db)}
+    (db/get-products db)
     (catch Exception e
-      {:failure
-       {:message "Failed to get products"
-        :reason (.getMessage e)}})))
+      (throw (ex-info "Failed to get products"
+                     {:type :system.exception/internal
+                      :cause e})))))
 
 (defn get-product
+  "Fetches a product by ID from the database"
   [db ^java.util.UUID id]
   (try
     (let [result (db/get-product db id)]
       (if (nil? result)
-        {:not-found
-         {:message "Product not found"
-          :product-id id}}
-        {:success result}))
+        (throw (ex-info "Product not found"
+                       {:type :system.exception/not-found
+                        :product-id id}))
+        result))
+    (catch clojure.lang.ExceptionInfo e
+      (throw e)) ; Pass through our custom exceptions
     (catch Exception e
-      {:failure
-       {:message "Failed to get product"
-        :product-id id
-        :reason (.getMessage e)}})))
+      (throw (ex-info "Failed to get product"
+                     {:type :system.exception/internal
+                      :product-id id
+                      :cause e})))))
+
