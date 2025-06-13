@@ -2,10 +2,9 @@
   (:require
     [app.malli.registry]                                    ;; enable registry
     [app.middlewares.exception :as exception]
+    [app.middlewares.format :as format]
     [app.products.routes :as products]
-    [camel-snake-kebab.core :as csk]
     [integrant.core :as ig]
-    [muuntaja.core :as m]
     [reitit.coercion.malli :as malli]
     [reitit.core :as r]
     [reitit.ring :as ring]
@@ -28,17 +27,6 @@
                 (fn [req]
                   (handler (assoc req :db db)))))})
 
-(defonce muuntaja-instance
-         (m/create
-           (->
-             m/default-options
-             (assoc-in
-               [:formats "application/json" :decoder-opts]  ;; decode request
-               {:decode-key-fn csk/->kebab-case-keyword})
-             (assoc-in
-               [:formats "application/json" :encoder-opts]  ;; encode response
-               {:encode-key-fn csk/->camelCaseString}))))
-
 (defn handler
   [db]
   (ring/ring-handler
@@ -46,8 +34,8 @@
       routes
       {:validate rrs/validate
        :data     {:db         db
-                  :muuntaja   muuntaja-instance             ; Use the customized instance
-                  :coercion   malli/coercion                ; Use Malli coercion for Reitit
+                  :muuntaja   format/instance             ; Use the customized muuntaja instance
+                  :coercion   malli/coercion              ; Use Malli coercion for Reitit
                   :middleware [;; Ensure correct order, muuntaja format-middleware before coercion
                                [cors/wrap-cors
                                 :access-control-allow-origin [#"http://localhost:8280"]
