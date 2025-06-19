@@ -2,19 +2,12 @@
   (:gen-class)
   (:require
    [app.system :as system]
+   [app.env :as env]
    [app.config :as config]))
 
 (defonce system (atom nil))
 
-(def defaults
-  {:init       (fn []
-                 (println "\n-=[app starting]=-"))
-   :start      (fn []
-                 (println "\n-=[app started successfully]=-"))
-   :stop       (fn []
-                 (println "\n-=[app has shut down successfully]=-"))
-   :middleware (fn [handler _] handler)
-   :opts       {:profile :prod}})
+(def defaults env/defaults)
 
 ;; log uncaught exceptions in threads
 (Thread/setDefaultUncaughtExceptionHandler
