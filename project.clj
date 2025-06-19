@@ -18,6 +18,7 @@
                  [org.clojure/tools.logging "1.3.0"]
                  [org.flywaydb/flyway-database-postgresql "11.8.0"]
                  [org.postgresql/postgresql "42.7.5"]
+                 [org.slf4j/slf4j-simple "2.0.17"]
                  [ring-cors "0.1.13"]
                  [ring/ring-core "1.14.1"]
                  [ring/ring-devel "1.14.1"]
@@ -29,6 +30,7 @@
   :ring {:handler app.handler/handler}
   :source-paths ["src/clj" "src/cljc" "env/prod/clj"]
   :test-paths ["test/clj" "test/cljc" "env/dev/clj"]
+  :jvm-opts ["-Dclojure.tools.logging.factory=clojure.tools.logging.impl/slf4j-factory"]
   :profiles {:uberjar
              {:aot      :all
               :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}
