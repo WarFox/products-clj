@@ -4,7 +4,8 @@
    [app.server :as server]
    [app.system :as system]
    [integrant.core :as ig]
-   [next.jdbc :as jdbc]))
+   [next.jdbc :as jdbc]
+   [clojure.tools.logging :as log]))
 
 ;; Test System
 (def ^:dynamic *server* (atom nil))
@@ -17,10 +18,11 @@
   (reset! *server* (server/start! handler port)))
 
 (defmethod ig/init-key :app.db/connection
-  [_ {:keys [db-spec test-container]}]
-  (let [mapped-ports (:mapped-ports test-container)
-        db-spec      (update db-spec :port #(get mapped-ports % %))]
-    (reset! *db* (jdbc/get-datasource db-spec))))
+  [_ {:keys [db-spec container]}]
+  (log/info "Setting up test database connection")
+  (let [mapped-ports (:mapped-ports container {})
+        effective-db-spec (update db-spec :port #(get mapped-ports % %))]
+    (reset! *db* (jdbc/get-datasource effective-db-spec))))
 
 (defn init-test-system
   "Initialize the system."
@@ -29,8 +31,10 @@
     (system/init config)))
 
 (defn init-db
+  "Initialize the database connection for testing without starting the server."
   []
+  (log/info "Initializing test database connection")
   (let [config (config/system-config {:profile :test})]
     (system/init
      config
-     [:app.test/container :app.db/spec :app.db/connection :app.migrations/flyway])))
+     [:app.system/env :app.db/spec :app.db/connection :app.migrations/flyway])))

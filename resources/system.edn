@@ -11,17 +11,13 @@
   :password #or [#env DB_PASSWORD "products"]
   :host     #or [#env DB_HOST "localhost"]}
 
- :app.test/container
- #profile {:dev  {:db-spec #ig/ref :app.db/spec}
-           :test {:db-spec #ig/ref :app.db/spec}
-           :prod nil}
+ :app.containers/postgres-container
+ {:db-spec #ig/ref :app.db/spec
+  :env     #ig/ref :app.system/env}
 
  :app.db/connection
- #profile {:dev  {:db-spec        #ig/ref :app.db/spec
-                  :test-container #ig/ref :app.test/container}
-           :test {:db-spec        #ig/ref :app.db/spec
-                  :test-container #ig/ref :app.test/container}
-           :prod {:db-spec #ig/ref :app.db/spec}}
+ {:db-spec    #ig/ref :app.db/spec
+  :container  #ig/ref :app.containers/postgres-container}
 
  :app.migrations/flyway
  {:db #ig/ref :app.db/connection}
@@ -40,4 +36,3 @@
   :port    #profile {:dev  #long #or [#env PORT 3000]
                      :test #long #or [#env PORT 0];; random port for testing
                      :prod #long #or [#env PORT 8080]}}}
-

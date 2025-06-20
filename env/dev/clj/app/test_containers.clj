@@ -1,32 +1,28 @@
 (ns app.test-containers
+  "Container management namespace that handles containers for development"
   (:require
-   [integrant.core :as ig]
-   [clj-test-containers.core :as tc]))
-
-(defn postgres-container
+    [clj-test-containers.core :as tc]
+    [clojure.tools.logging :as log]))
+(defn start-postgres-container!
+  "Creates and starts a PostgreSQL container for development environment"
   [{:keys [dbname user password port]}]
-  (println "Starting PostgreSQL container")
-  (-> (tc/create {:image-name    "postgres:14.1"
-                  :exposed-ports [port]
-                  :env-vars      {"POSTGRES_DB"       dbname
-                                  "POSTGRES_USER"     user
-                                  "POSTGRES_PASSWORD" password}})
-      (tc/bind-filesystem! {:host-path      "/tmp"
-                            :container-path "/opt"
-                            :mode           :read-only})
-      (tc/start!)))
+  (log/info "Starting PostgreSQL container")
+  (let [container
+        (-> (tc/create {:image-name    "postgres:14.1"
+                        :exposed-ports [port]
+                        :env-vars      {"POSTGRES_DB"       dbname
+                                        "POSTGRES_USER"     user
+                                        "POSTGRES_PASSWORD" password}})
+            (tc/bind-filesystem! {:host-path      "/tmp"
+                                  :container-path "/opt"
+                                  :mode           :read-only})
+            (tc/start!))]
+    (assoc container
+      :type :postgres-container)))
 
-(defn stop!
+(defn stop-postgres-container!
+  "Stops a PostgreSQL container"
   [container]
-  (println "Stopping container")
-  (tc/stop! container))
-
-;; overriding :app.test/container
-(defmethod ig/init-key :app.test/container
-  [_ {:keys [db-spec]}]
-  (when db-spec
-    (postgres-container db-spec)))
-
-(defmethod ig/halt-key! :app.test/container
-  [_ container]
-  (stop! container))
+  (log/info "Stopping PostgreSQL container")
+  (when container
+    (tc/stop! container)))

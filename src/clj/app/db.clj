@@ -5,7 +5,8 @@
    [next.jdbc :as jdbc]
    [next.jdbc.date-time :refer [read-as-instant]]
    [next.jdbc.plan :as plan]
-   [next.jdbc.sql :as sql]))
+   [next.jdbc.sql :as sql]
+   [clojure.tools.logging :as log]))
 
 ;; This is needed to read timestamps as instants from postgres
 (read-as-instant)
@@ -41,15 +42,19 @@
   opts)
 
 (defmethod ig/init-key :app.db/connection
-  [_ {:keys [db-spec test-container]}]
-  (let [mapped-ports (:mapped-ports test-container)
-        db-spec      (update db-spec :port #(get mapped-ports % %))]
-    (jdbc/get-datasource db-spec)))
+  [_ {:keys [db-spec container]}]
+  (log/info "Initializing database connection")
+  (let [mapped-ports (:mapped-ports container {})
+        effective-port (get mapped-ports (:port db-spec) (:port db-spec))
+        effective-db-spec (assoc db-spec :port effective-port)]
+
+    (log/debug "Database connection parameters:" (dissoc effective-db-spec :password))
+    (jdbc/get-datasource effective-db-spec)))
 
 (defmethod ig/init-key :app.db/seed
   [_ {:keys [db]}]
   (when db
-    (println "Seeding database with initial data")
+    (log/info "Seeding database with initial data")
     (create-product db
                     {:id             (random-uuid)
                      :name           "Sample Product"
@@ -57,4 +62,3 @@
                      :description    "This is a sample product"
                      :created-at     (time/instant-now :micros)
                      :updated-at     (time/instant-now :micros)})))
-
