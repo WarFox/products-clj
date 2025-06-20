@@ -1,6 +1,6 @@
 (ns app.products.handlers-test
   (:require
-   [app.db :as db]
+   [app.products.repository :as repository]
    [app.products.handlers :as handler]
    [app.spec :as spec]
    [app.test-system :as test-system]
@@ -51,7 +51,7 @@
                      :created-at     (time/instant-now :micros)
                      :updated-at     (time/instant-now :micros)}]]
       (doseq [product products]
-        (db/create-product @test-system/*db* product)) ; Create a product for testing
+        (repository/create-product @test-system/*db* product)) ; Create a product for testing
       (is (= {:status 200
               :body   products}
              (handler/list-products {:db @test-system/*db*}))))))
@@ -64,7 +64,7 @@
                    :price-in-cents 100
                    :created-at     (time/instant-now :micros)
                    :updated-at     (time/instant-now :micros)}]
-      (db/create-product @test-system/*db* product) ; Create a product for testing
+      (repository/create-product @test-system/*db* product) ; Create a product for testing
       (is (= {:status 200
               :body   product}
              (handler/get-product {:db          @test-system/*db*

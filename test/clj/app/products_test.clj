@@ -1,13 +1,13 @@
 (ns app.products-test
   (:require
-   [app.db :as db]
-   [app.server :as server]
-   [app.test-system :as test-system]
-   [app.util.time :as time]
-   [clj-http.client :as http]
-   [clojure.data.json :as json]
-   [clojure.test :refer [deftest is testing use-fixtures]]
-   [fixtures :refer [truncate-table with-system]]))
+    [app.products.repository :as repository]
+    [app.server :as server]
+    [app.test-system :as test-system]
+    [app.util.time :as time]
+    [clj-http.client :as http]
+    [clojure.data.json :as json]
+    [clojure.test :refer [deftest is testing use-fixtures]]
+    [fixtures :refer [truncate-table with-system]]))
 
 (use-fixtures :once
   with-system)
@@ -38,7 +38,7 @@
 (deftest get-product-test
   (testing "GET request to server to fetch a product by ID"
     (let [now      (time/instant-now :micros)
-          product  (db/create-product @test-system/*db*
+          product  (repository/create-product @test-system/*db*
                                       {:id             (random-uuid)
                                        :name           "Test Product"
                                        :description    "This is a test product"
@@ -60,3 +60,20 @@
       (is (= (:price-in-cents product) (:priceInCents result)))
       (is (= (str (:created-at product)) (:createdAt result)))
       (is (= (str (:updated-at product)) (:updatedAt result))))))
+
+(deftest delete-product-test
+  (testing "DELETE request to server to delete a product by ID"
+    (let [product  (repository/create-product @test-system/*db*
+                                      {:id             (random-uuid)
+                                       :name           "Test Product"
+                                       :description    "This is a test product"
+                                       :price-in-cents 100
+                                       :created-at     (time/instant-now :micros)
+                                       :updated-at     (time/instant-now :micros)})
+          url      (format "http://localhost:%s/v1/products/%s" (server/get-port @test-system/*server*) (:id product))
+          response (http/delete url)]
+      ;; TODO Validate Schema
+      (is (= 204 (:status response)))
+      (is (= nil (:body response)))
+      ;; Verify that the product is deleted
+      (is (nil? (repository/get-product @test-system/*db* (:id product)))))))
