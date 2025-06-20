@@ -3,11 +3,11 @@
 
 (def defaults
   {:init       (fn []
-                 (log/info "\n-=[ starting]=-"))
+                 (log/info "-=[ starting]=-"))
    :started    (fn []
-                 (log/info "\n-=[ started successfully]=-"))
+                 (log/info "-=[ started successfully]=-"))
    :stop       (fn []
-                 (log/info "\n-=[ has shut down successfully]=-"))
+                 (log/info "-=[ has shut down successfully]=-"))
    :middleware (fn [handler _] handler)
    :opts       {:profile :prod}})
 

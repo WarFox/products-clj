@@ -1,34 +1,35 @@
 (ns app.core
   (:gen-class)
   (:require
-   [app.system :as system]
-   [app.env :as env]
-   [app.config :as config]))
+    [app.config :as config]
+    [app.env :as env]
+    [app.system :as system]
+    [clojure.tools.logging :as log]))
 
 (defonce system (atom nil))
 
-(def defaults env/defaults)
-
 ;; log uncaught exceptions in threads
 (Thread/setDefaultUncaughtExceptionHandler
- (fn [thread ex]
-   (println {:what      :uncaught-exception
-             :exception ex
-             :where     (str "Uncaught exception on" (.getName thread))})))
+  (fn [thread ex]
+    (println {:what      :uncaught-exception
+              :exception ex
+              :where     (str "Uncaught exception on" (.getName thread))})))
 
-(defn stop-app []
+(defn stop-app
+  [defaults]
   ((or (:stop defaults) (fn [])))
   (some-> (deref system) (system/halt!)))
 
-(defn start-app [& [params]]
-  (println "starting app", params)
-  ((or (:start params) (:start defaults) (fn [])))
-  (->> (config/system-config (or (:opts params) (:opts defaults) {}))
-       (system/init)
-       (reset! system)))
+(defn start-app
+  [defaults & [params]]
+  (let [opts (or (:opts params) (:opts defaults) {})]
+    (log/info "Starting app \uD83C\uDF89 opts:", opts, "params:" params)
+    ((or (:init params) (:init defaults) (fn [])))
+    (->> (config/system-config opts)
+         (system/init)
+         (reset! system)))
+  (.addShutdownHook (Runtime/getRuntime) (Thread. (fn [] (stop-app defaults) (shutdown-agents)))))
 
-(defn -main [& args]
-  ((or (:init defaults) (fn [])))
-  (let [profile (if (some #{"--dev"} args) :dev :prod)]
-    (start-app {:opts {:profile profile}}))
-  (.addShutdownHook (Runtime/getRuntime) (Thread. (fn [] (stop-app) (shutdown-agents)))))
+(defn -main
+  [& args]
+  (start-app env/defaults args))

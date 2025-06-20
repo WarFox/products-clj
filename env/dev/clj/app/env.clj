@@ -5,11 +5,11 @@
 
 (def defaults
   {:init       (fn []
-                 (log/info "\n-=[ starting using the development profile]=-"))
+                 (log/info "-=[ starting using the development profile]=-"))
    :started    (fn []
-                 (log/info "\n-=[ started successfully using the development profile]=-"))
+                 (log/info "-=[ started successfully using the development profile]=-"))
    :stop       (fn []
-                 (log/info "\n-=[ has shut down successfully]=-"))
+                 (log/info "-=[ has shut down successfully]=-"))
    :opts       {:profile       :dev
                 :persist-data? true}})
 
