@@ -2,7 +2,8 @@
   (:require
     [next.jdbc :as jdbc]
     [next.jdbc.plan :as plan]
-    [next.jdbc.sql :as sql]))
+    [next.jdbc.sql :as sql]
+    [clojure.tools.logging :as log]))
 
 (defn get-products
   "Fetches products from the postgres using next.jdbc"
@@ -15,6 +16,7 @@
 (defn create-product
   "Creates a new product in the postgres using next.jdbc"
   [db product]
+  (log/info "Repository: Creating product:" product)
   (sql/insert! db
                :products product
                (assoc jdbc/unqualified-snake-kebab-opts
@@ -29,3 +31,12 @@
   "Deletes a product by ID from the postgres using next.jdbc"
   [db id]
   (sql/delete! db :products {:id id}))
+
+(defn update-product
+  "Updates a product by ID from the postgres using next.jdbc"
+  [db id product]
+  (sql/update! db
+               :products product
+               {:id id}
+               (assoc jdbc/unqualified-snake-kebab-opts
+                 :suffix "RETURNING *")))

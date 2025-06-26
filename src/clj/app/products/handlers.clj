@@ -29,3 +29,10 @@
     (service/delete-product db id)
     {:status 204
      :body   nil}))
+
+(defn update-product
+  "Updates a product by ID from the database"
+  [{:keys [db path-params body-params]}]
+  (let [id (-> path-params :id parse-uuid)]
+    {:status 200
+     :body   (service/update-product db id (domain/->Product body-params))}))

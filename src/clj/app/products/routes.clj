@@ -21,4 +21,9 @@
               :responses  {200 {:body spec/ProductV1}}}
      :delete {:summary    "Delete Product by uuid"
               :parameters {:path {:id uuid?}}
-              :handler    #'handlers/delete-product}}]])
+              :handler    #'handlers/delete-product}
+     :put    {:summary    "Update Product by uuid"
+              :parameters {:path {:id uuid?}
+                           :body spec/ProductV1Request}
+              :responses  {200 {:body spec/ProductV1}}
+              :handler    #'handlers/update-product}}]])

@@ -77,3 +77,21 @@
       (is (= nil (:body response)))
       ;; Verify that the product is deleted
       (is (nil? (repository/get-product @test-system/*db* (:id product)))))))
+
+(deftest put-update-product-test
+  (testing "Send PUT request to server to update a product"
+    (let [product (repository/create-product @test-system/*db*
+                                           {:id (random-uuid)
+                                            :name "Test Product"
+                                            :description "Original Description"
+                                            :price-in-cents 100})
+          updated-product-data {:name "Updated Product"
+                                :description "Updated Description"
+                                :price-in-cents 200}
+          url (format "http://localhost:%s/v1/products/%s" (server/get-port @test-system/*server*) (:id product))
+          response (http/put url
+                             {:form-params updated-product-data
+                              :content-type :json})
+          result (json/read-str (:body response) :key-fn keyword)]
+      (is (= 200 (:status response)))
+      (is (= (:name updated-product-data) (:name result))))))
