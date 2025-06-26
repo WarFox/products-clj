@@ -1,6 +1,6 @@
 (ns app.orders.handlers
   (:require
-   [app.domain :as domain]
+   [app.orders.domain :as domain]
    [app.orders.services :as service]))
 
 (defn list-orders

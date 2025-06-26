@@ -1,7 +1,7 @@
 (ns app.products.handlers
   (:require
-    [app.domain :as domain]
-    [app.products.services :as service]))
+   [app.products.domain :as domain]
+   [app.products.services :as service]))
 
 (defn list-products
   "Fetches products from the database"
