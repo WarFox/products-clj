@@ -3,6 +3,7 @@
   (:require
     [clj-test-containers.core :as tc]
     [clojure.tools.logging :as log]))
+
 (defn start-postgres-container!
   "Creates and starts a PostgreSQL container for development environment"
   [{:keys [dbname user password port]}]

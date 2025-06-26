@@ -1,17 +1,19 @@
 (ns app.products.services
   "Service functions to work with Product domain, has business logic and validation"
   (:require
-    [app.products.repository :as repository]
-    [app.spec :as spec]
-    [malli.core :as malli])
+   [app.products.repository :as repository]
+   [app.spec :as spec]
+   [malli.core :as malli]
+   [clojure.tools.logging :as log])
   (:import
-    (clojure.lang ExceptionInfo)
-    (java.util UUID)))
+   (clojure.lang ExceptionInfo)
+   (java.util UUID)))
 
 (defn create-product
   "Creates a new product in the database"
   [db product]
   (try
+    (log/info "Creating product:" product)
     (malli/assert spec/ProductV1 product)
     (repository/create-product db product)
     (catch ExceptionInfo e

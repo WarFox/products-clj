@@ -4,6 +4,7 @@
     [app.middlewares.exception :as exception]
     [app.middlewares.format :as format]
     [app.products.routes :as products]
+    [app.orders.routes :as orders]
     [integrant.core :as ig]
     [reitit.coercion.malli :as malli]
     [reitit.core :as r]
@@ -18,7 +19,8 @@
 
 (def routes
   [["/v1" {:name :version1}
-    products/routes]])
+    products/routes
+    orders/routes]])
 
 (def db-middleware
   {:name    ::db

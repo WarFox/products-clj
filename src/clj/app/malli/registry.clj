@@ -3,6 +3,8 @@
    [app.spec]
    [malli.core :as m]
    [malli.experimental.time :as met]
+   [malli.experimental.time.generator]
+   [malli.experimental.time.json-schema]
    [malli.registry :as mr]))
 
 (mr/set-default-registry!

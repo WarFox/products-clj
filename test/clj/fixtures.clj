@@ -12,7 +12,9 @@
 
 (defn truncate-table
   [f]
-  (jdbc/execute! @test-system/*db* ["truncate table products"])
+  (jdbc/execute! @test-system/*db* ["truncate table order_items cascade"])
+  (jdbc/execute! @test-system/*db* ["truncate table orders cascade"])
+  (jdbc/execute! @test-system/*db* ["truncate table products cascade"])
   (f))
 
 (defn with-system
