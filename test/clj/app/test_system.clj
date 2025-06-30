@@ -17,6 +17,11 @@
   []
   (or @*db* (throw (ex-info "Test database not initialized" {}))))
 
+(defn server
+  "Get the test server instance."
+  []
+  (or @*server* (throw (ex-info "Test server not initialized" {}))))
+
 ;; Override the init-key methods for the test system
 (defmethod ig/init-key :app.server/jetty
   [_ {:keys [handler port]}]

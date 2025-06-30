@@ -2,7 +2,7 @@
   (:require
     [app.products.repository :as repository]
     [app.server :as server]
-    [app.test-system :as test-system]
+    [app.test-system :refer [db server]]
     [app.util.time :as time]
     [clj-http.client :as http]
     [clojure.data.json :as json]
@@ -20,7 +20,7 @@
     (let [product  {:name           "Test Product"
                     :description    "This is a test product"
                     :price-in-cents 100}
-          url      (format "http://localhost:%s/v1/products" (server/get-port @test-system/*server*))
+          url      (format "http://localhost:%s/v1/products" (server/get-port (server)))
           response (http/post url
                               {:form-params  product
                                :content-type :json})
@@ -38,14 +38,14 @@
 (deftest get-product-test
   (testing "GET request to server to fetch a product by ID"
     (let [now      (time/instant-now :micros)
-          product  (repository/create-product @test-system/*db*
+          product  (repository/create-product (db)
                                       {:id             (random-uuid)
                                        :name           "Test Product"
                                        :description    "This is a test product"
                                        :price-in-cents 100
                                        :created-at     now
                                        :updated-at     now})
-          url      (format "http://localhost:%s/v1/products/%s" (server/get-port @test-system/*server*) (:id product))
+          url      (format "http://localhost:%s/v1/products/%s" (server/get-port (server)) (:id product))
           response (http/get url
                              {:accept :json})
           result   (json/read-str (:body response)
@@ -63,24 +63,24 @@
 
 (deftest delete-product-test
   (testing "DELETE request to server to delete a product by ID"
-    (let [product  (repository/create-product @test-system/*db*
+    (let [product  (repository/create-product (db)
                                       {:id             (random-uuid)
                                        :name           "Test Product"
                                        :description    "This is a test product"
                                        :price-in-cents 100
                                        :created-at     (time/instant-now :micros)
                                        :updated-at     (time/instant-now :micros)})
-          url      (format "http://localhost:%s/v1/products/%s" (server/get-port @test-system/*server*) (:id product))
+          url      (format "http://localhost:%s/v1/products/%s" (server/get-port (server)) (:id product))
           response (http/delete url)]
       ;; TODO Validate Schema
       (is (= 204 (:status response)))
       (is (= nil (:body response)))
       ;; Verify that the product is deleted
-      (is (nil? (repository/get-product @test-system/*db* (:id product)))))))
+      (is (nil? (repository/get-product (db) (:id product)))))))
 
 (deftest put-update-product-test
   (testing "Send PUT request to server to update a product"
-    (let [product (repository/create-product @test-system/*db*
+    (let [product (repository/create-product (db)
                                            {:id (random-uuid)
                                             :name "Test Product"
                                             :description "Original Description"
@@ -88,7 +88,7 @@
           updated-product-data {:name "Updated Product"
                                 :description "Updated Description"
                                 :price-in-cents 200}
-          url (format "http://localhost:%s/v1/products/%s" (server/get-port @test-system/*server*) (:id product))
+          url (format "http://localhost:%s/v1/products/%s" (server/get-port (server)) (:id product))
           response (http/put url
                              {:form-params updated-product-data
                               :content-type :json})
