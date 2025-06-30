@@ -31,7 +31,8 @@
   "Deletes a product by ID from the database"
   [db ^UUID id]
   (let [result (repository/delete-product db id)]
-    (when (zero? result)
+    (if (pos? (:next.jdbc/update-count result))
+      (:next.jdbc/update-count result)
       (throw (ex-info "Product not found"
                       {:type       :system.exception/not-found
                        :product-id id})))))
