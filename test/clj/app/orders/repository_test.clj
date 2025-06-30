@@ -4,9 +4,11 @@
    [app.products.services :as product-service]
    [app.spec :as spec]
    [app.test-system :refer [db]]
+   [app.util.time :as time]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [clojure.tools.logging :as log]
    [fixtures :refer [truncate-table with-db]]
+   [malli.core :as malli]
    [malli.generator :as mg]
    [next.jdbc :as jdbc]
    [next.jdbc.sql :as sql]
@@ -47,11 +49,23 @@
       (is (= [order-item]
              (order-repo/get-order-items (db) order-id))))))
 
+(defn generate-order
+  "Generates a random order with valid data"
+  []
+  (let [order           (mg/generate spec/OrderV1)
+        effective-order (-> order
+                            (update :items #(mapv (fn [item] (assoc item :order-id (:id order))) %))
+                            (update :created-at time/instant-now)
+                            (update :updated-at time/instant-now))]
+    (malli/validate spec/OrderV1Request effective-order)
+    effective-order))
+
 (deftest create-get-and-delete-order
   (testing "Creates order with provided details and get it and delete it"
     ;; given products
-    (let [order          (mg/generate spec/OrderV1)]
+    (let [order          (generate-order)]
       ;; create products for order items
+
       (doseq [item (:items order)]
         (product-service/create-product
          (db)

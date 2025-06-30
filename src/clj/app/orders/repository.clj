@@ -5,7 +5,6 @@
    [next.jdbc.sql :as sql]
    [next.jdbc.types :as types]))
 
-
 (defn get-orders
   "Fetches all orders from the database"
   [db]
