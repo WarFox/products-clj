@@ -4,11 +4,10 @@
    [app.products.services :as product-service]
    [app.spec :as spec]
    [app.test-system :refer [db]]
-   [app.util.time :as time]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [clojure.tools.logging :as log]
-   [fixtures :refer [truncate-table with-db]]
-   [malli.core :as malli]
+   [fixtures :refer [truncate-table with-db given-orders]]
+   [generators :refer [generate-order generate-product]]
    [malli.generator :as mg]
    [next.jdbc :as jdbc]
    [next.jdbc.sql :as sql]
@@ -49,30 +48,18 @@
       (is (= [order-item]
              (order-repo/get-order-items (db) order-id))))))
 
-(defn generate-order
-  "Generates a random order with valid data"
-  []
-  (let [order           (mg/generate spec/OrderV1)
-        effective-order (-> order
-                            (update :items #(mapv (fn [item] (assoc item :order-id (:id order))) %))
-                            (update :created-at time/instant-now)
-                            (update :updated-at time/instant-now))]
-    (malli/validate spec/OrderV1Request effective-order)
-    effective-order))
-
 (deftest create-get-and-delete-order
   (testing "Creates order with provided details and get it and delete it"
     ;; given products
-    (let [order          (generate-order)]
+    (let [order (generate-order)]
       ;; create products for order items
-
       (doseq [item (:items order)]
         (product-service/create-product
          (db)
          (-> (mg/generate spec/ProductV1)
              (assoc :id (:product-id item)))))
       (is (= order
-             (order-repo/create-order (db)
+             (order-repo/create-order-with-items (db)
                                       order)))
       (is (= order
              (order-repo/get-order (db) (:id order))))
@@ -82,3 +69,10 @@
              (order-repo/delete-order (db) (:id order))))
       (is (nil?
            (order-repo/get-order (db) (:id order)))))))
+
+(deftest get-orders-test
+  (testing "Get all orders"
+    (let [orders (take 2 (repeatedly generate-order))]
+      (given-orders orders) ; Create orders for testing
+      (is (= (map #(dissoc % :items) orders)
+             (order-repo/get-orders (db)))))))

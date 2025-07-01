@@ -13,7 +13,7 @@
   "Creates a new order with items in the database"
   [{:keys [db body-params]}]
   {:status 201
-   :body   (service/create-order db (domain/->Order body-params))})
+   :body   (service/create-order-with-items db (domain/->Order body-params))})
 
 (defn get-order
   "Fetches an order by ID from the database"

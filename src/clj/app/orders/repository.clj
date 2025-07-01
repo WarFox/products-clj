@@ -9,8 +9,8 @@
   "Fetches all orders from the database"
   [db]
   (plan/select! db
-                [:id :customer_name :customer_email :status :total_amount
-                 :shipping_address :created_at :updated_at]
+                [:id :customer-name :customer-email :status :total-amount
+                 :shipping-address :created-at :updated-at]
                 ["select * from orders"]
                 jdbc/unqualified-snake-kebab-opts))
 
@@ -33,14 +33,13 @@
 
 (defn create-order-items
   "Creates order items for an order"
-  [db order-id items]
-  (doseq [item items]
-    (sql/insert! db
-                 :order-items
-                 (assoc item :order-id order-id)
-                 jdbc/unqualified-snake-kebab-opts)))
+  [db items]
+  (sql/insert-multi! db
+                     :order-items
+                     items
+                     jdbc/unqualified-snake-kebab-opts))
 
-(defn create-order
+(defn create-order-with-items
   "Creates a new order with its items in a transaction"
   [db {:keys [items] :as order}]
   (jdbc/with-transaction [tx db]
@@ -51,7 +50,7 @@
                                             :status (types/as-other (:status order-data)))
                                      (assoc jdbc/unqualified-snake-kebab-opts
                                             :suffix "RETURNING *"))]
-      (create-order-items tx (:id created-order) items)
+      (create-order-items tx items)
       (get-order-with-items tx (:id created-order)))))
 
 (defn get-order

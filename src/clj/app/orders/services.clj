@@ -1,23 +1,25 @@
 (ns app.orders.services
   "Service functions to work with Order domain, has business logic and validation"
   (:require
-    [app.orders.repository :as repository]
-    [app.spec :as spec]
-    [malli.core :as malli])
+   [app.orders.repository :as order-repo]
+   [app.spec :as spec]
+   [malli.core :as malli]
+   [malli.error :as me])
   (:import
-    (clojure.lang ExceptionInfo)
-    (java.util UUID)))
+   (clojure.lang ExceptionInfo)
+   (java.util UUID)))
 
-(defn create-order
+(defn create-order-with-items
   "Creates a new order with items in the database"
   [db order]
   (try
     (malli/assert spec/OrderV1 order)
-    (repository/create-order db order)
+    (order-repo/create-order-with-items db order)
     (catch ExceptionInfo e
       (throw (ex-info "Invalid order data"
                       {:type   :system.exception/business
                        :order  order
+                       :explain (-> spec/OrderV1 (malli/explain order) me/humanize)
                        :cause  e})))
     (catch Exception e
       (throw (ex-info "Failed to create order"
@@ -29,9 +31,9 @@
   "Fetches all orders from the database"
   [db]
   (try
-    (let [orders (repository/get-orders db)]
+    (let [orders (order-repo/get-orders db)]
       ;; For each order, fetch its items
-      (mapv #(assoc % :items (repository/get-order-items db (:id %))) orders))
+      (mapv #(assoc % :items (order-repo/get-order-items db (:id %))) orders))
     (catch Exception e
       (throw (ex-info "Failed to get orders"
                       {:type  :system.exception/internal
@@ -41,7 +43,7 @@
   "Fetches an order by ID from the database"
   [db ^UUID id]
   (try
-    (let [result (repository/get-order db id)]
+    (let [result (order-repo/get-order db id)]
       (if (nil? result)
         (throw (ex-info "Order not found"
                         {:type     :system.exception/not-found
@@ -59,7 +61,7 @@
   "Deletes an order by ID from the database"
   [db ^UUID id]
   (try
-    (let [result (repository/delete-order db id)]
+    (let [result (order-repo/delete-order db id)]
       (if (= 0 result)
         (throw (ex-info "Order not found"
                         {:type     :system.exception/not-found
@@ -80,7 +82,7 @@
     (malli/assert spec/OrderStatusEnum status)
     ;; Check if order exists first
     (get-order db id)
-    (repository/update-order-status db id status)
+    (order-repo/update-order-status db id status)
     (catch ExceptionInfo e
       (throw e))                                           ; Pass through our custom exceptions
     (catch Exception e
