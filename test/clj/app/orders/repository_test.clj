@@ -5,29 +5,15 @@
    [app.spec :as spec]
    [app.test-system :refer [db]]
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [clojure.tools.logging :as log]
-   [fixtures :refer [truncate-table with-db given-orders]]
-   [generators :refer [generate-order generate-product]]
-   [malli.generator :as mg]
-   [next.jdbc :as jdbc]
-   [next.jdbc.sql :as sql]
-   [next.jdbc.types :as types]))
+   [fixtures :refer [truncate-table with-db given-order given-orders]]
+   [generators :refer [generate-order]]
+   [malli.generator :as mg]))
 
 (use-fixtures :once
   with-db)
 
 (use-fixtures :each
   truncate-table)
-
-(defn insert-order
-  [order-data]
-  (log/info "order data ", order-data)
-  (let [log-ds (jdbc/with-logging (db) (fn [s v] (log/info s v)))]
-    (sql/insert! log-ds
-                 :orders
-                 (assoc order-data
-                        :status (types/as-other (:status order-data)))
-                 jdbc/unqualified-snake-kebab-opts)))
 
 (deftest create-order-items
   (testing "Create order-items"
@@ -41,9 +27,8 @@
           product    (assoc (mg/generate spec/ProductV1)
                             :id (:product-id order-item))]
       (product-service/create-product (db) product)
-      (insert-order order)
+      (given-order order)
       (order-repo/create-order-items (db)
-                                     order-id
                                      [order-item])
       (is (= [order-item]
              (order-repo/get-order-items (db) order-id))))))
@@ -60,7 +45,7 @@
              (assoc :id (:product-id item)))))
       (is (= order
              (order-repo/create-order-with-items (db)
-                                      order)))
+                                                 order)))
       (is (= order
              (order-repo/get-order (db) (:id order))))
       (is (= {:next.jdbc/update-count 1}

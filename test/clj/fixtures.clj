@@ -46,3 +46,11 @@
      (db)
      (generate-product (:product-id item))))
   (order-repo/create-order-items (db) order-items))
+
+(defn given-order
+  [order-data]
+  (sql/insert! (db)
+               :orders
+               (assoc order-data
+                      :status (types/as-other (:status order-data)))
+               jdbc/unqualified-snake-kebab-opts))

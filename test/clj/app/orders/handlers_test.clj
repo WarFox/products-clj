@@ -2,6 +2,7 @@
   (:require
    [app.orders.handlers :as handler]
    [app.orders.repository :as repository]
+   [app.products.services :as product-service]
    [app.spec :as spec]
    [app.test-system :refer [db]]
    [app.util.time :as time]
@@ -10,8 +11,7 @@
    [generators :refer [generate-order generate-product]]
    [malli.core :as malli]
    [malli.error :as me]
-   [malli.generator :as mg]
-   [app.products.services :as product-service]))
+   [malli.generator :as mg]))
 
 (use-fixtures :once
   with-db)
