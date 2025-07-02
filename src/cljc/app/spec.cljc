@@ -12,11 +12,23 @@
 (def ProductV1Request
   [:map {:closed true}
    [:name :string]
-   [:price-in-cents number?]
-   [:description [:maybe :string]]])
+   [:price-in-cents [:int {:min 0}]]
+   [:description :string]])
 
 (def ProductV1List
   [:sequential ProductV1])
+
+(def ProductV1Response
+  [:map {:closed true}
+   [:id :string]
+   [:name :string]
+   [:priceInCents [:int {:min 0}]]
+   [:description [:maybe :string]]
+   [:createdAt :string]
+   [:updatedAt :string]])
+
+(def ProductV1ListResponse
+  [:sequential ProductV1Response])
 
 (def OrderStatusEnum
   [:enum "pending" "processing" "shipped" "delivered" "cancelled"])

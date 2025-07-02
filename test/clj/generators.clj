@@ -27,10 +27,25 @@
     effective-order))
 
 (defn generate-product
+  "Generates a random product request (without server-managed fields like timestamps)"
   ([]
    (generate-product (random-uuid)))
   ([id]
-   (let [product           (mg/generate spec/ProductV1)
-         effective-product (assoc product :id id)]
-     (malli/assert spec/ProductV1 effective-product)
-     effective-product)))
+   ;; For repository tests that need full product with ID and timestamps
+   (let [product (-> (mg/generate spec/ProductV1)
+                     (assoc :id id))]
+     (malli/assert spec/ProductV1 product)
+     product)))
+
+(defn generate-product-request
+  "Generates a random product request (for API calls)"
+  ([]
+   (generate-product-request {}))
+  ([{:keys [name description price-in-cents]}]
+   (let [product (merge-with #(or %2 %1)
+                             (mg/generate spec/ProductV1Request)
+                             {:name           name
+                              :description    description
+                              :price-in-cents price-in-cents})]
+     (malli/assert spec/ProductV1Request product)
+     product)))

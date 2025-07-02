@@ -1,10 +1,11 @@
 (ns app.products.services
   "Service functions to work with Product domain, has business logic and validation"
   (:require
+   [app.errors :as errors]
    [app.spec :as spec]
-   [malli.core :as malli]
    [clojure.tools.logging :as log]
-   [integrant.core :as ig])
+   [integrant.core :as ig]
+   [malli.core :as malli])
   (:import (java.util UUID)))
 
 (defn create-product
@@ -23,9 +24,7 @@
   "Fetches a product by ID from the database"
   [repository ^UUID id]
   (or ((:get-product repository) id)
-      (throw (ex-info "Product not found"
-                      {:type       :system.exception/not-found
-                       :product-id id}))))
+      (errors/not-found! "Product not found" {:product-id id})))
 
 (defn delete-product
   "Deletes a product by ID from the database"
@@ -33,9 +32,7 @@
   (let [result ((:delete-product repository) id)]
     (if (pos? (:next.jdbc/update-count result))
       (:next.jdbc/update-count result)
-      (throw (ex-info "Product not found"
-                      {:type       :system.exception/not-found
-                       :product-id id})))))
+      (errors/not-found! "Product not found" {:product-id id}))))
 
 (defn update-product
   "Updates a product by ID from the database"

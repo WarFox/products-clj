@@ -1,15 +1,13 @@
 (ns app.products.integration-test
   (:require
-   [app.products.repository :as repository]
+   [api-helpers :as api]
+   [app.products.repository :as product-repo]
    [app.spec :as spec]
-   [app.test-system :as test-system]
-   [app.util.time :as time]
-   [cheshire.core :as json]
-   [clj-http.client :as http]
+   [app.test-system :refer [db]]
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [fixtures :refer [truncate-table with-system]]
-   [malli.core :as malli]
-   [malli.error :as me]))
+   [fixtures :refer [truncate-table with-system given-product]]
+   [generators :refer [generate-product generate-product-request]]
+   [malli.core :as malli]))
 
 (use-fixtures :once
   with-system)
@@ -17,91 +15,74 @@
 (use-fixtures :each
   truncate-table)
 
-(defn api-url
-  "Build API URL for the given path."
-  [path]
-  (str (test-system/base-url) "/v1" path))
-
-(defn json-request
-  "Make a JSON request with default options."
-  [method url & [opts]]
-  (let [default-opts {:content-type :json
-                      :accept :json
-                      :as :json
-                      :throw-exceptions false}]
-    (http/request (merge default-opts
-                         {:method method
-                          :url url}
-                         opts))))
-
 (deftest create-product-integration-test
   (testing "Create a product via API"
-    (let [product {:name           "Test Product"
-                   :description    "This is a test product"
-                   :price-in-cents 100}
-          request {:body (json/encode product)}]
-      (is (malli/validate spec/ProductV1Request product)
-          (-> spec/ProductV1Request (malli/explain product) (me/humanize)))
-      (let [response (json-request :post (api-url "/products") request)
-            {:keys [status body]} response]
-        (is (= 201 status))
-        (is (string? (:id body)))
-        (is (string? (:createdAt body)))
-        (is (string? (:updatedAt body)))
-        (is (= (:name body) "Test Product"))
-        (is (= (:description body) "This is a test product"))
-        (is (= (:priceInCents body) 100))
-        (is (= (:createdAt body) (:updatedAt body)))))))
+    (let [product               (generate-product-request)
+          response              (api/create-product! product)
+          {:keys [status body]} response]
+      (malli/assert spec/ProductV1Response body)
+      (is (= 201 status))
+      (is (uuid? (parse-uuid (:id body))))
+      (is (= (:name product) (:name body)))
+      (is (= (:description product) (:description body)))
+      (is (= (:price-in-cents product) (:priceInCents body)))
+      (is (= (:updatedAt body) (:createdAt body))))))
 
 (deftest get-products-integration-test
   (testing "Get all products via API"
-    (let [products [{:id             (random-uuid)
-                     :name           "Test Product 1"
-                     :description    "Hello, this is a test product"
-                     :price-in-cents 100
-                     :created-at     (time/instant-now :micros)
-                     :updated-at     (time/instant-now :micros)}
-                    {:id             (random-uuid)
-                     :name           "Test Product 2"
-                     :description    "Hello, this is a test product 2"
-                     :price-in-cents 200
-                     :created-at     (time/instant-now :micros)
-                     :updated-at     (time/instant-now :micros)}]]
-      ;; Create test products
-      (doseq [product products]
-        (repository/create-product (test-system/db) product))
-      
-      (let [response (json-request :get (api-url "/products"))
+    (let [product1 (generate-product-request)
+          product2 (generate-product-request)]
+      ;; Create test products via API
+      (api/create-product! product1)
+      (api/create-product! product2)
+
+      (let [response (api/get-products)
             {:keys [status body]} response]
+        (malli/assert spec/ProductV1ListResponse body)
         (is (= 200 status))
         (is (= 2 (count body)))
         ;; Verify the products are returned (order might differ)
         (let [returned-names (set (map :name body))]
-          (is (contains? returned-names "Test Product 1"))
-          (is (contains? returned-names "Test Product 2")))))))
+          (is (contains? returned-names (:name product1)))
+          (is (contains? returned-names (:name product2))))))))
 
 (deftest get-product-by-id-integration-test
   (testing "Get product by id via API"
-    (let [product {:id             (random-uuid)
-                   :name           "Test Product"
-                   :description    "This is a test product"
-                   :price-in-cents 100
-                   :created-at     (time/instant-now :micros)
-                   :updated-at     (time/instant-now :micros)}]
-      ;; Create test product
-      (repository/create-product (test-system/db) product)
-      
-      (let [response (json-request :get (api-url (str "/products/" (:id product))))
-            {:keys [status body]} response]
-        (is (= 200 status))
-        (is (= (:id body) (str (:id product))))
-        (is (= (:name body) "Test Product"))
-        (is (= (:description body) "This is a test product"))
-        (is (= (:priceInCents body) 100))))))
+    (let [product               (given-product (generate-product))
+          product-request       (generate-product-request product)
+          response              (api/get-product (:id product))
+          {:keys [status body]} response]
+      (malli/assert spec/ProductV1Response body)
+      (is (= 200 status))
+      (is (= (str (:id product)) (:id body)))
+      (is (= (:name product-request) (:name body)))
+      (is (= (:description product-request) (:description body)))
+      (is (= (:price-in-cents product-request) (:priceInCents body)))
+      (is (= (str (:created-at product)) (:createdAt body))))))
 
 (deftest get-product-by-id-not-found-integration-test
   (testing "Get product by non-existent id returns 404"
     (let [non-existent-id (random-uuid)
-          response (json-request :get (api-url (str "/products/" non-existent-id)))
+          response (api/get-product non-existent-id)
           {:keys [status]} response]
       (is (= 404 status)))))
+
+(deftest delete-product-integration-test
+  (testing "DELETE request to server to delete a product by ID"
+    (let [product  (given-product (generate-product))
+          response (api/delete-product! (:id product))
+          {:keys [status body]} response]
+      (is (= 204 status))
+      (is (= nil body))
+      (is (nil? (product-repo/get-product (db) (:id product)))))))
+
+(deftest update-product-test
+  (testing "Send PUT request to server to update a product"
+    (let [product (given-product (generate-product))
+          updated-product-data {:name "Updated Product"
+                                :description "Updated Description"
+                                :price-in-cents 200}
+          response (api/update-product! (:id product) updated-product-data)
+          {:keys [status body]} response]
+      (is (= 200 status))
+      (is (= (:name updated-product-data) (:name body))))))
