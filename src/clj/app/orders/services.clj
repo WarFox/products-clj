@@ -28,12 +28,10 @@
                        :cause  e})))))
 
 (defn get-orders
-  "Fetches all orders from the database"
+  "Fetches all orders from the database efficiently"
   [repository]
   (try
-    (let [orders ((:get-orders repository))]
-      ;; For each order, fetch its items
-      (mapv #(assoc % :items ((:get-order-items repository) (:id %))) orders))
+    ((:get-orders-with-items repository))
     (catch Exception e
       (throw (ex-info "Failed to get orders"
                       {:type  :system.exception/internal

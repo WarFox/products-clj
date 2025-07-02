@@ -42,7 +42,12 @@
           {:keys [status body]} response]
       (is (= 200 status))
       (malli/assert spec/OrderV1ListResponse body)
-      (is (= 3 (count body))))))
+      (is (= 3 (count body)))
+      ;; Verify each order has items
+      (doseq [order body]
+        (is (contains? order :items))
+        (is (vector? (:items order)))
+        (is (pos? (count (:items order))))))))
 
 (deftest get-orders-integration-test-empty-case
   (testing "Get all orders via API empty case"

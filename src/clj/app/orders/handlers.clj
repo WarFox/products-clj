@@ -6,7 +6,7 @@
 
 (defn- list-orders
   [service _request]
-  (log/info "Listing all products")
+  (log/info "Listing all orders")
   {:status 200
    :body   ((:get-orders service))})
 

@@ -15,6 +15,21 @@
                 ["select * from orders"]
                 jdbc/unqualified-snake-kebab-opts))
 
+(defn get-orders-with-items
+  "Efficiently fetches all orders with their items in 2 queries to avoid N+1 problem"
+  [db]
+  (let [orders (get-orders db)
+        order-ids (map :id orders)
+        all-items (when (seq order-ids)
+                    (plan/select! db
+                                  [:id :order-id :product-id :quantity :price-per-unit]
+                                  [(str "select * from order_items where order_id = ANY(?)")
+                                   (into-array java.util.UUID order-ids)]
+                                  jdbc/unqualified-snake-kebab-opts))
+        items-by-order-id (group-by :order-id all-items)]
+    (mapv #(assoc % :items (get items-by-order-id (:id %) []))
+          orders)))
+
 (defn get-order-items
   "Fetches all order items for a specific order"
   [db order-id]
@@ -73,6 +88,7 @@
 (defmethod ig/init-key :app.orders/repository
   [_ {:keys [db]}]
   {:get-orders             (partial get-orders db)
+   :get-orders-with-items  (partial get-orders-with-items db)
    :get-order-items        (partial get-order-items db)
    :get-order-with-items   (partial get-order-with-items db)
    :create-order-items     (partial create-order-items db)

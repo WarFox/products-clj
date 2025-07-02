@@ -4,6 +4,7 @@
    [app.products.repository :as product-repo]
    [app.spec :as spec]
    [app.test-system :refer [db]]
+   [clojure.string :as str]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [fixtures :refer [truncate-table with-system given-product]]
    [generators :refer [generate-product generate-product-request]]
@@ -66,6 +67,28 @@
           response (api/get-product non-existent-id)
           {:keys [status]} response]
       (is (= 404 status)))))
+
+(deftest create-product-with-invalid-data-integration-test
+  (testing "Create product with invalid data returns 400 with helpful error message"
+    (let [invalid-product {:name "Test Product"
+                           :description "Test"
+                           :price-in-cents -100}  ; Invalid negative price
+          response (api/create-product! invalid-product)
+          {:keys [status body]} response
+          ;; Parse the JSON string if it comes back as a string
+          parsed-body (if (string? body)
+                        (cheshire.core/parse-string body true)
+                        body)]
+      (is (= 400 status))
+      (is (map? parsed-body))
+      (is (= "reitit.coercion/request-coercion" (:type parsed-body)))
+      ;; The error should have humanized validation errors
+      (is (contains? parsed-body :humanized))
+      (is (contains? (:humanized parsed-body) :priceInCents))
+      (is (vector? (get-in parsed-body [:humanized :priceInCents])))
+      ;; Check that the error message mentions the validation issue
+      (is (str/includes? (first (get-in parsed-body [:humanized :priceInCents]))
+                         "should be at least 0")))))
 
 (deftest delete-product-integration-test
   (testing "DELETE request to server to delete a product by ID"
