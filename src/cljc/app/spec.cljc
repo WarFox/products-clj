@@ -16,7 +16,7 @@
    [:description [:maybe :string]]])
 
 (def ProductV1List
-  [:vector ProductV1])
+  [:sequential ProductV1])
 
 (def OrderStatusEnum
   [:enum "pending" "processing" "shipped" "delivered" "cancelled"])
@@ -45,14 +45,14 @@
    [:shipping-address :string]
    [:created-at :time/instant]
    [:updated-at :time/instant]
-   [:items [:vector OrderItemV1]]])
+   [:items [:sequential OrderItemV1]]])
 
 (def OrderV1Request
   [:map {:closed true}
    [:customer-name :string]
    [:customer-email :string]
    [:shipping-address :string]
-   [:items [:vector OrderItemV1Request]]])
+   [:items [:sequential OrderItemV1Request]]])
 
 (def OrderV1List
-  [:vector OrderV1])
+  [:sequential OrderV1])

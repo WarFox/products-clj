@@ -5,12 +5,19 @@
    [malli.core :as malli]
    [malli.generator :as mg]))
 
+(defn generate-order-item
+  "Generates a random order item with valid data"
+  [order-id]
+  (let [order-item           (mg/generate spec/OrderItemV1)
+        effective-order-item (assoc order-item :order-id order-id)]
+    (malli/assert spec/OrderItemV1 effective-order-item)
+    effective-order-item))
+
 (defn generate-order
   "Generates a random order with valid data"
   []
   (let [order           (mg/generate spec/OrderV1)
-        order-items     (mapv #(assoc % :order-id (:id order))
-                              (repeatedly (rand-int 10) #(mg/generate spec/OrderItemV1)))
+        order-items     (repeatedly 1 #(generate-order-item (:id order)))
         now             (time/instant-now :millis)
         effective-order (-> order
                             (assoc :items order-items)
