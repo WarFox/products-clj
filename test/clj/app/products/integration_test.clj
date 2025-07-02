@@ -21,13 +21,15 @@
     (let [product               (generate-product-request)
           response              (api/create-product! product)
           {:keys [status body]} response]
-      (malli/assert spec/ProductV1Response body)
+      (malli/assert spec/ProductV1ResponseEnvelope body)
       (is (= 201 status))
-      (is (uuid? (parse-uuid (:id body))))
-      (is (= (:name product) (:name body)))
-      (is (= (:description product) (:description body)))
-      (is (= (:price-in-cents product) (:priceInCents body)))
-      (is (= (:updatedAt body) (:createdAt body))))))
+      (is (= "success" (:status body)))
+      (let [data (:data body)]
+        (is (uuid? (parse-uuid (:id data))))
+        (is (= (:name product) (:name data)))
+        (is (= (:description product) (:description data)))
+        (is (= (:price-in-cents product) (:priceInCents data)))
+        (is (= (:updatedAt data) (:createdAt data)))))))
 
 (deftest get-products-integration-test
   (testing "Get all products via API"
@@ -39,13 +41,15 @@
 
       (let [response (api/get-products)
             {:keys [status body]} response]
-        (malli/assert spec/ProductV1ListResponse body)
+        (malli/assert spec/ProductV1ListResponseEnvelope body)
         (is (= 200 status))
-        (is (= 2 (count body)))
-        ;; Verify the products are returned (order might differ)
-        (let [returned-names (set (map :name body))]
-          (is (contains? returned-names (:name product1)))
-          (is (contains? returned-names (:name product2))))))))
+        (is (= "success" (:status body)))
+        (let [data (:data body)]
+          (is (= 2 (count data)))
+          ;; Verify the products are returned (order might differ)
+          (let [returned-names (set (map :name data))]
+            (is (contains? returned-names (:name product1)))
+            (is (contains? returned-names (:name product2)))))))))
 
 (deftest get-product-by-id-integration-test
   (testing "Get product by id via API"
@@ -53,13 +57,15 @@
           product-request       (generate-product-request product)
           response              (api/get-product (:id product))
           {:keys [status body]} response]
-      (malli/assert spec/ProductV1Response body)
+      (malli/assert spec/ProductV1ResponseEnvelope body)
       (is (= 200 status))
-      (is (= (str (:id product)) (:id body)))
-      (is (= (:name product-request) (:name body)))
-      (is (= (:description product-request) (:description body)))
-      (is (= (:price-in-cents product-request) (:priceInCents body)))
-      (is (= (str (:created-at product)) (:createdAt body))))))
+      (is (= "success" (:status body)))
+      (let [data (:data body)]
+        (is (= (str (:id product)) (:id data)))
+        (is (= (:name product-request) (:name data)))
+        (is (= (:description product-request) (:description data)))
+        (is (= (:price-in-cents product-request) (:priceInCents data)))
+        (is (= (str (:created-at product)) (:createdAt data)))))))
 
 (deftest get-product-by-id-not-found-integration-test
   (testing "Get product by non-existent id returns 404"
@@ -79,16 +85,19 @@
           parsed-body (if (string? body)
                         (cheshire.core/parse-string body true)
                         body)]
+      (malli/assert spec/ErrorResponse parsed-body)
       (is (= 400 status))
-      (is (map? parsed-body))
-      (is (= "reitit.coercion/request-coercion" (:type parsed-body)))
-      ;; The error should have humanized validation errors
-      (is (contains? parsed-body :humanized))
-      (is (contains? (:humanized parsed-body) :priceInCents))
-      (is (vector? (get-in parsed-body [:humanized :priceInCents])))
-      ;; Check that the error message mentions the validation issue
-      (is (str/includes? (first (get-in parsed-body [:humanized :priceInCents]))
-                         "should be at least 0")))))
+      (is (= "error" (:status parsed-body)))
+      (is (string? (:message parsed-body)))
+      ;; The error data should contain the validation details
+      (let [error-data (:data parsed-body)]
+        (is (= "reitit.coercion/request-coercion" (:type error-data)))
+        (is (contains? error-data :humanized))
+        (is (contains? (:humanized error-data) :priceInCents))
+        (is (vector? (get-in error-data [:humanized :priceInCents])))
+        ;; Check that the error message mentions the validation issue
+        (is (str/includes? (first (get-in error-data [:humanized :priceInCents]))
+                           "should be at least 0"))))))
 
 (deftest delete-product-integration-test
   (testing "DELETE request to server to delete a product by ID"
@@ -107,5 +116,8 @@
                                 :price-in-cents 200}
           response (api/update-product! (:id product) updated-product-data)
           {:keys [status body]} response]
+      (malli/assert spec/ProductV1ResponseEnvelope body)
       (is (= 200 status))
-      (is (= (:name updated-product-data) (:name body))))))
+      (is (= "success" (:status body)))
+      (let [data (:data body)]
+        (is (= (:name updated-product-data) (:name data)))))))

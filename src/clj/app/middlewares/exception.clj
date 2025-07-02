@@ -8,7 +8,8 @@
     ;; You can optionally use this to report error to an external service
     (log/error exception))
   {:status status
-   :body   {:message (or (ex-message exception)  message)
+   :body   {:status "error"
+            :message (or (ex-message exception) message)
             :data    (ex-data exception)
             :uri     (:uri request)}})
 

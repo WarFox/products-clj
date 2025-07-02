@@ -11,7 +11,8 @@
    [ring.middleware.keyword-params :as params]
    [ring.middleware.stacktrace :as stacktrace]
    [app.middlewares.exception :as exception]
-   [app.middlewares.format :as format]))
+   [app.middlewares.format :as format]
+   [app.middlewares.response :as response]))
 
 (defmethod ig/init-key :app.router/routes
   [_ {:keys [routes]}]
@@ -34,6 +35,7 @@
                             muuntaja/format-negotiate-middleware ;; Handles content negotiation
                             muuntaja/format-response-middleware ;; Encodes response body
                             muuntaja/format-request-middleware ;; Decodes request body
+                            response/wrap-response-envelope ;; Wrap successful responses in envelope
                             coercion/coerce-exceptions-middleware
                             coercion/coerce-request-middleware ;; Coerces request parameters
                             coercion/coerce-response-middleware ;; Coerces response body

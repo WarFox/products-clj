@@ -91,3 +91,37 @@
 
 (def OrderV1ListResponse
   [:sequential OrderV1Response])
+
+;; Response envelope schemas
+(def SuccessResponse
+  [:map {:closed true}
+   [:status [:= "success"]]
+   [:data :any]])
+
+(def ErrorResponse
+  [:map {:closed true}
+   [:status [:= "error"]]
+   [:message :string]
+   [:data [:maybe :any]]
+   [:uri [:maybe :string]]])
+
+;; Enveloped response schemas
+(def ProductV1ResponseEnvelope
+  [:map {:closed true}
+   [:status [:= "success"]]
+   [:data ProductV1Response]])
+
+(def ProductV1ListResponseEnvelope
+  [:map {:closed true}
+   [:status [:= "success"]]
+   [:data ProductV1ListResponse]])
+
+(def OrderV1ResponseEnvelope
+  [:map {:closed true}
+   [:status [:= "success"]]
+   [:data OrderV1Response]])
+
+(def OrderV1ListResponseEnvelope
+  [:map {:closed true}
+   [:status [:= "success"]]
+   [:data OrderV1ListResponse]])
