@@ -27,12 +27,14 @@
           total-amount          (reduce + (map #(* (:quantity %) (:price-per-unit %)) order-items))
           response              (api/create-order! order-request)
           {:keys [status body]} response]
-      (malli/assert spec/OrderV1Response body)
+      (malli/assert spec/OrderV1ResponseEnvelope body)
       (is (= 201 status))
-      (is (= "pending" (:status body)))
-      (is (= total-amount (:totalAmount body)))
-      (is (= (count order-items) (count (:items body))))
-      (is (= (:createdAt body) (:updatedAt body))))))
+      (is (= "success" (:status body)))
+      (let [data (:data body)]
+        (is (= "pending" (:status data)))
+        (is (= total-amount (:totalAmount data)))
+        (is (= (count order-items) (count (:items data))))
+        (is (= (:createdAt data) (:updatedAt data)))))))
 
 (deftest get-orders-integration-test
   (testing "Get all orders via API"
@@ -41,21 +43,26 @@
           response              (api/get-orders)
           {:keys [status body]} response]
       (is (= 200 status))
-      (malli/assert spec/OrderV1ListResponse body)
-      (is (= 3 (count body)))
-      ;; Verify each order has items
-      (doseq [order body]
-        (is (contains? order :items))
-        (is (vector? (:items order)))
-        (is (pos? (count (:items order))))))))
+      (malli/assert spec/OrderV1ListResponseEnvelope body)
+      (is (= "success" (:status body)))
+      (let [data (:data body)]
+        (is (= 3 (count data)))
+        ;; Verify each order has items
+        (doseq [order data]
+          (is (contains? order :items))
+          (is (vector? (:items order)))
+          (is (pos? (count (:items order)))))))))
 
 (deftest get-orders-integration-test-empty-case
   (testing "Get all orders via API empty case"
     (let [response              (api/get-orders)
           {:keys [status body]} response]
       (is (= 200 status))
-      (is (vector? body))
-      (is (= 0 (count body))))))
+      (malli/assert spec/OrderV1ListResponseEnvelope body)
+      (is (= "success" (:status body)))
+      (let [data (:data body)]
+        (is (vector? data))
+        (is (= 0 (count data)))))))
 
 (deftest get-order-by-id-not-found-integration-test
   (testing "Get order by non-existent id returns 404"

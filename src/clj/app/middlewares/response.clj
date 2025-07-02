@@ -7,10 +7,14 @@
    Into: {:status 200 :body {:status \"success\" :data {...}}}"
   [handler]
   (fn [request]
-    (let [response (handler request)
-          {:keys [status body]} response]
-      (if (and (>= status 200) (< status 300))
-        ;; Success response - wrap in envelope
-        (assoc response :body {:status "success" :data body})
-        ;; Error response - let exception middleware handle it
-        response))))
+    (try
+      (let [response (handler request)
+            {:keys [status body]} response]
+        (if (and (>= status 200) (< status 300))
+          ;; Success response - wrap in envelope
+          (assoc response :body {:status "success" :data body})
+          ;; Error response - let exception middleware handle it
+          response))
+      (catch Exception e
+        ;; Re-throw exception to be handled by exception middleware
+        (throw e)))))

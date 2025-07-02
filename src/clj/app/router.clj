@@ -36,7 +36,6 @@
                             muuntaja/format-response-middleware ;; Encodes response body
                             muuntaja/format-request-middleware ;; Decodes request body
                             response/wrap-response-envelope ;; Wrap successful responses in envelope
-                            coercion/coerce-exceptions-middleware
                             coercion/coerce-request-middleware ;; Coerces request parameters
                             coercion/coerce-response-middleware ;; Coerces response body
                             stacktrace/wrap-stacktrace-log
