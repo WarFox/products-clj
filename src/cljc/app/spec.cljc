@@ -53,7 +53,7 @@
    [:customer-name :string]
    [:customer-email :string]
    [:status OrderStatusEnum]
-   [:total-amount :int]
+   [:total-amount [:int {:min 0}]]
    [:shipping-address :string]
    [:created-at :time/instant]
    [:updated-at :time/instant]
@@ -68,3 +68,26 @@
 
 (def OrderV1List
   [:sequential OrderV1])
+
+(def OrderItemV1Response
+  [:map {:closed true}
+   [:id :string]
+   [:orderId :string]
+   [:productId :string]
+   [:quantity [:int {:min 1}]]
+   [:pricePerUnit [:int {:min 0}]]])
+
+(def OrderV1Response
+  [:map {:closed true}
+   [:id :string]
+   [:customerName :string]
+   [:customerEmail :string]
+   [:status OrderStatusEnum]
+   [:totalAmount [:int {:min 0}]]
+   [:shippingAddress :string]
+   [:createdAt :string]
+   [:updatedAt :string]
+   [:items [:sequential OrderItemV1Response]]])
+
+(def OrderV1ListResponse
+  [:sequential OrderV1Response])

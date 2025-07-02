@@ -89,23 +89,3 @@
   "Delete an order by ID via API."
   [id]
   (json-request :delete (api-url (str "/orders/" id))))
-
-;; Utility functions for common test patterns
-
-(defn created-product
-  "Create a product and return the response body (the created product)."
-  ([]
-   (created-product (generate-product-request)))
-  ([product]
-   (let [response (create-product! product)]
-     (when (= 201 (:status response))
-       (:body response)))))
-
-(defn created-order
-  "Create an order and return the response body (the created order)."
-  ([]
-   (created-order (generate-order)))
-  ([order]
-   (let [response (create-order! order)]
-     (when (= 201 (:status response))
-       (:body response)))))
