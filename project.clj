@@ -41,5 +41,5 @@
                              [clj-test-containers "0.7.4"]
                              [lambdaisland/kaocha "1.91.1392"]
                              [org.clojure/data.json "2.5.1"]]}}
-  :aliases {"clj-kondo" ["run" "-m" "clj-kondo.main"]
+  :aliases {"clj-kondo" ["run" "-m" "clj-kondo.main" "--lint" "src/clj" "test/clj" "src/cljc" "src/cljs"]
             "kaocha"    ["run" "-m" "kaocha.runner" "--reporter" "documentation"]})
