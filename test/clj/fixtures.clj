@@ -1,7 +1,7 @@
 (ns fixtures
   (:require
    [app.orders.repository :as order-repo]
-   [app.products.services :as product-service]
+   [app.products.repository :as product-repo]
    [app.system :as system]
    [app.test-system :refer [init-db init-test-system db]]
    [generators :refer [generate-product]]
@@ -42,7 +42,7 @@
 (defn given-order-items
   [order-items]
   (doseq [item order-items]
-    (product-service/create-product
+    (product-repo/create-product
      (db)
      (generate-product (:product-id item))))
   (order-repo/create-order-items (db) order-items))
@@ -55,4 +55,4 @@
 
 (defn given-product
   [product]
-  (product-service/create-product (db) product))
+  (product-repo/create-product (db) product))

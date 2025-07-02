@@ -3,7 +3,8 @@
    [next.jdbc :as jdbc]
    [next.jdbc.plan :as plan]
    [next.jdbc.sql :as sql]
-   [next.jdbc.types :as types]))
+   [next.jdbc.types :as types]
+   [integrant.core :as ig]))
 
 (defn get-orders
   "Fetches all orders from the database"
@@ -68,3 +69,14 @@
   [db id status]
   (sql/update! db :orders {:status status} {:id id} jdbc/unqualified-snake-kebab-opts)
   (get-order-with-items db id))
+
+(defmethod ig/init-key :app.orders/repository
+  [_ {:keys [db]}]
+  {:get-orders             (partial get-orders db)
+   :get-order-items        (partial get-order-items db)
+   :get-order-with-items   (partial get-order-with-items db)
+   :create-order-items     (partial create-order-items db)
+   :create-order-with-items (partial create-order-with-items db)
+   :get-order              (partial get-order db)
+   :delete-order           (partial delete-order db)
+   :update-order-status    (partial update-order-status db)})

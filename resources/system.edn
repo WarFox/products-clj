@@ -28,11 +28,44 @@
            :test nil
            :prod nil}
 
- :app.handler/api
+ ;; Products components
+ :app.products/repository
  {:db #ig/ref :app.db/connection}
 
+ :app.products/service
+ {:repository #ig/ref :app.products/repository}
+
+ :app.products/handlers
+ {:service #ig/ref :app.products/service}
+
+ :app.products/routes
+ {:handlers #ig/ref :app.products/handlers}
+
+ ;; Orders components
+ :app.orders/repository
+ {:db #ig/ref :app.db/connection}
+
+ :app.orders/service
+ {:repository #ig/ref :app.orders/repository}
+
+ :app.orders/handlers
+ {:service #ig/ref :app.orders/service}
+
+ :app.orders/routes
+ {:handlers #ig/ref :app.orders/handlers}
+
+ ;; Router and handler components
+ :app.router/routes
+ {:routes #ig/refset :reitit.routes/api}
+
+ :app.router/core
+ {:routes #ig/ref :app.router/routes}
+
+ :app.handler/ring
+ {:router #ig/ref :app.router/core}
+
  :app.server/jetty
- {:handler #ig/ref :app.handler/api
+ {:handler #ig/ref :app.handler/ring
   :port    #profile {:dev  #long #or [#env PORT 3000]
                      :test #long #or [#env PORT 0];; random port for testing
                      :prod #long #or [#env PORT 8080]}}}

@@ -1,38 +1,40 @@
 (ns app.products.handlers
   (:require
    [app.products.domain :as domain]
-   [app.products.services :as service]))
+   [integrant.core :as ig]))
 
-(defn list-products
-  "Fetches products from the database"
-  [{:keys [db]}]
-  {:status 200
-   :body   (service/get-products db)})
+(defn make-handlers
+  "Creates handler functions with injected service dependency"
+  [service]
+  {:list-products
+   (fn list-products [_]
+     {:status 200
+      :body   ((:get-products service))})
 
-(defn create-product
-  "Creates a new product in the database"
-  [{:keys [db body-params]}]
-  {:status 201
-   :body   (service/create-product db (domain/->Product body-params))})
+   :create-product
+   (fn create-product [{:keys [body-params]}]
+     {:status 201
+      :body   ((:create-product service) (domain/->Product body-params))})
 
-(defn get-product
-  "Fetches a product by ID from the database"
-  [{:keys [db path-params]}]
-  (let [id (-> path-params :id parse-uuid)]
-    {:status 200
-     :body   (service/get-product db id)}))
+   :get-product
+   (fn get-product [{:keys [path-params]}]
+     (let [id (-> path-params :id parse-uuid)]
+       {:status 200
+        :body   ((:get-product service) id)}))
 
-(defn delete-product
-  "Deletes a product by ID from the database"
-  [{:keys [db path-params]}]
-  (let [id (-> path-params :id parse-uuid)]
-    (service/delete-product db id)
-    {:status 204
-     :body   nil}))
+   :delete-product
+   (fn delete-product [{:keys [path-params]}]
+     (let [id (-> path-params :id parse-uuid)]
+       ((:delete-product service) id)
+       {:status 204
+        :body   nil}))
 
-(defn update-product
-  "Updates a product by ID from the database"
-  [{:keys [db path-params body-params]}]
-  (let [id (-> path-params :id parse-uuid)]
-    {:status 200
-     :body   (service/update-product db id (domain/->Product body-params))}))
+   :update-product
+   (fn update-product [{:keys [path-params body-params]}]
+     (let [id (-> path-params :id parse-uuid)]
+       {:status 200
+        :body   ((:update-product service) id (domain/->Product body-params))}))})
+
+(defmethod ig/init-key :app.products/handlers
+  [_ {:keys [service]}]
+  (make-handlers service))

@@ -3,7 +3,8 @@
     [next.jdbc :as jdbc]
     [next.jdbc.plan :as plan]
     [next.jdbc.sql :as sql]
-    [clojure.tools.logging :as log]))
+    [clojure.tools.logging :as log]
+    [integrant.core :as ig]))
 
 (defn get-products
   "Fetches products from the postgres using next.jdbc"
@@ -40,3 +41,11 @@
                {:id id}
                (assoc jdbc/unqualified-snake-kebab-opts
                  :suffix "RETURNING *")))
+
+(defmethod ig/init-key :app.products/repository
+  [_ {:keys [db]}]
+  {:get-products    (partial get-products db)
+   :create-product  (partial create-product db)
+   :get-product     (partial get-product db)
+   :delete-product  (partial delete-product db)
+   :update-product  (partial update-product db)})

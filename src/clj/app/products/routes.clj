@@ -1,29 +1,37 @@
 (ns app.products.routes
   (:require
-   [app.products.handlers :as handlers]
-   [app.spec :as spec]))
+   [app.spec :as spec]
+   [integrant.core :as ig]))
 
-(def routes
-  [["/products"
-    {:name ::products
-     :get  {:summary   "List products"
+(defn routes
+  "Define the routes for the products API."
+  [handlers]
+  ["/products" {:name ::products}
+   [""
+    {:get  {:summary   "List products"
             :responses {200 {:body spec/ProductV1List}}
-            :handler   #'handlers/list-products}
+            :handler   (:list-products handlers)}
      :post {:summary    "Create new Product"
             :parameters {:body spec/ProductV1Request}
             :responses  {201 {:body spec/ProductV1}}
-            :handler    #'handlers/create-product}}]
-   ["/products/:id"
+            :handler    (:create-product handlers)}}]
+   ["/:id"
     {:name   ::product-id
      :get    {:summary    "Get Product by uuid"
               :parameters {:path {:id uuid?}}
-              :handler    #'handlers/get-product
+              :handler    (:get-product handlers)
               :responses  {200 {:body spec/ProductV1}}}
      :delete {:summary    "Delete Product by uuid"
               :parameters {:path {:id uuid?}}
-              :handler    #'handlers/delete-product}
+              :handler    (:delete-product handlers)}
      :put    {:summary    "Update Product by uuid"
               :parameters {:path {:id uuid?}
                            :body spec/ProductV1Request}
               :responses  {200 {:body spec/ProductV1}}
-              :handler    #'handlers/update-product}}]])
+              :handler    (:update-product handlers)}}]])
+
+(derive :app.products/routes :reitit.routes/api)
+
+(defmethod ig/init-key :app.products/routes
+  [_ {:keys [handlers]}]
+  (routes handlers))

@@ -1,40 +1,42 @@
 (ns app.orders.handlers
   (:require
    [app.orders.domain :as domain]
-   [app.orders.services :as service]))
+   [integrant.core :as ig]))
 
-(defn list-orders
-  "Fetches all orders from the database"
-  [{:keys [db]}]
-  {:status 200
-   :body   (service/get-orders db)})
+(defn make-handlers
+  "Creates handler functions with injected service dependency"
+  [service]
+  {:list-orders
+   (fn list-orders [_]
+     {:status 200
+      :body   ((:get-orders service))})
 
-(defn create-order
-  "Creates a new order with items in the database"
-  [{:keys [db body-params]}]
-  (let [order (domain/->Order body-params)]
-    {:status 201
-     :body   (service/create-order-with-items db order)}))
+   :create-order
+   (fn create-order [{:keys [body-params]}]
+     (let [order (domain/->Order body-params)]
+       {:status 201
+        :body   ((:create-order-with-items service) order)}))
 
-(defn get-order
-  "Fetches an order by ID from the database"
-  [{:keys [db path-params]}]
-  (let [id (-> path-params :id parse-uuid)]
-    {:status 200
-     :body   (service/get-order db id)}))
+   :get-order
+   (fn get-order [{:keys [path-params]}]
+     (let [id (-> path-params :id parse-uuid)]
+       {:status 200
+        :body   ((:get-order service) id)}))
 
-(defn delete-order
-  "Deletes an order by ID from the database"
-  [{:keys [db path-params]}]
-  (let [id (-> path-params :id parse-uuid)]
-    (service/delete-order db id)
-    {:status 204
-     :body   nil}))
+   :delete-order
+   (fn delete-order [{:keys [path-params]}]
+     (let [id (-> path-params :id parse-uuid)]
+       ((:delete-order service) id)
+       {:status 204
+        :body   nil}))
 
-(defn update-order-status
-  "Updates the status of an order"
-  [{:keys [db path-params body-params]}]
-  (let [id (-> path-params :id parse-uuid)
-        status (:status body-params)]
-    {:status 200
-     :body   (service/update-order-status db id status)}))
+   :update-order-status
+   (fn update-order-status [{:keys [path-params body-params]}]
+     (let [id (-> path-params :id parse-uuid)
+           status (:status body-params)]
+       {:status 200
+        :body   ((:update-order-status service) id status)}))})
+
+(defmethod ig/init-key :app.orders/handlers
+  [_ {:keys [service]}]
+  (make-handlers service))

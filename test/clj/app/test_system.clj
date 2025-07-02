@@ -35,6 +35,17 @@
   [_ {:keys [handler port]}]
   (reset! *server* (server/start! handler port)))
 
+(defn server-port
+  "Get the port the test server is running on."
+  []
+  (when-let [server @*server*]
+    (server/get-port server)))
+
+(defn base-url
+  "Get the base URL for the test server."
+  []
+  (str "http://localhost:" (server-port)))
+
 (defmethod ig/init-key :app.db/connection
   [_ {:keys [db-spec container]}]
   (log/info "Setting up test database connection")
