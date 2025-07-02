@@ -59,7 +59,7 @@
    :http-xhrio {:method          :post
                 :uri            backend-uri
                 :timeout         1000
-                :params          (update-keys product csk/->camelCase)
+                :params          (dissoc (update-keys product csk/->camelCase) :price)
                 :format          (ajax/json-request-format)
                 :response-format (ajax/json-response-format {:keywords? true})
                 :on-success      [::process-response]
