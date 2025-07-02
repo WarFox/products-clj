@@ -12,8 +12,9 @@
 (defn create-order
   "Creates a new order with items in the database"
   [{:keys [db body-params]}]
-  {:status 201
-   :body   (service/create-order-with-items db (domain/->Order body-params))})
+  (let [order (domain/->Order body-params)]
+    {:status 201
+     :body   (service/create-order-with-items db order)}))
 
 (defn get-order
   "Fetches an order by ID from the database"

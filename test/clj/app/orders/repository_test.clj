@@ -1,12 +1,11 @@
 (ns app.orders.repository-test
   (:require
    [app.orders.repository :as order-repo]
-   [app.products.services :as product-service]
    [app.spec :as spec]
    [app.test-system :refer [db]]
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [fixtures :refer [truncate-table with-db given-order given-orders]]
-   [generators :refer [generate-order]]
+   [fixtures :refer [truncate-table with-db given-orders given-product]]
+   [generators :refer [generate-order generate-product]]
    [malli.generator :as mg]))
 
 (use-fixtures :once
@@ -24,10 +23,9 @@
           order      (-> (mg/generate spec/OrderV1)
                          (dissoc :items)
                          (assoc :id order-id))
-          product    (assoc (mg/generate spec/ProductV1)
-                            :id (:product-id order-item))]
-      (product-service/create-product (db) product)
-      (given-order order)
+          product    (generate-product (:product-id order-item))]
+      (given-product product)
+      (given-orders [order])
       (order-repo/create-order-items (db)
                                      [order-item])
       (is (= [order-item]
@@ -39,10 +37,7 @@
     (let [order (generate-order)]
       ;; create products for order items
       (doseq [item (:items order)]
-        (product-service/create-product
-         (db)
-         (-> (mg/generate spec/ProductV1)
-             (assoc :id (:product-id item)))))
+        (given-product (generate-product (:product-id item))))
       (is (= order
              (order-repo/create-order-with-items (db)
                                                  order)))

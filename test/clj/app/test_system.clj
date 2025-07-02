@@ -22,6 +22,14 @@
   []
   (or @*server* (throw (ex-info "Test server not initialized" {}))))
 
+(defn log-ds
+  "Get the test database connection with logging enabled."
+  []
+  (or (when @*db*
+        (jdbc/with-logging @*db* (fn [sym [sql & params]]
+                                   (log/info sym "Executing SQL:" sql "with params:" params))))
+      (throw (ex-info "Test database with logging not initialized" {}))))
+
 ;; Override the init-key methods for the test system
 (defmethod ig/init-key :app.server/jetty
   [_ {:keys [handler port]}]

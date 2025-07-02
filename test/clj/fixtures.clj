@@ -1,13 +1,13 @@
 (ns fixtures
   (:require
-   [app.test-system :refer [init-db init-test-system db]]
-   [app.system :as system]
    [app.orders.repository :as order-repo]
    [app.products.services :as product-service]
+   [app.system :as system]
+   [app.test-system :refer [init-db init-test-system db]]
    [generators :refer [generate-product]]
+   [next.jdbc :as jdbc]
    [next.jdbc.sql :as sql]
-   [next.jdbc.types :as types]
-   [next.jdbc :as jdbc]))
+   [next.jdbc.types :as types]))
 
 (defn with-db
   [f]
@@ -47,10 +47,12 @@
      (generate-product (:product-id item))))
   (order-repo/create-order-items (db) order-items))
 
-(defn given-order
-  [order-data]
-  (sql/insert! (db)
-               :orders
-               (assoc order-data
-                      :status (types/as-other (:status order-data)))
-               jdbc/unqualified-snake-kebab-opts))
+(defn given-orders-with-items!
+  [orders]
+  (given-orders orders)
+  (doseq [order orders]
+    (given-order-items (:items order))))
+
+(defn given-product
+  [product]
+  (product-service/create-product (db) product))

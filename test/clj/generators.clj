@@ -24,9 +24,6 @@
    (generate-product (random-uuid)))
   ([id]
    (let [product           (mg/generate spec/ProductV1)
-         effective-product (-> product
-                               (assoc :id id)
-                               (assoc :created-at (time/instant-now :millis))
-                               (assoc :updated-at (time/instant-now :millis)))]
+         effective-product (assoc product :id id)]
      (malli/assert spec/ProductV1 effective-product)
      effective-product)))

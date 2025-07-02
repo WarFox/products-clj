@@ -1,16 +1,11 @@
 (ns app.orders.handlers-test
   (:require
-   [app.orders.handlers :as handler]
-   [app.orders.repository :as repository]
-   [app.products.services :as product-service]
+   [app.orders.handlers :as order-handler]
    [app.spec :as spec]
-   [app.test-system :refer [db]]
-   [app.util.time :as time]
+   [app.test-system :refer [db log-ds]]
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [fixtures :refer [truncate-table with-db]]
+   [fixtures :refer [truncate-table with-db given-orders-with-items! given-product]]
    [generators :refer [generate-order generate-product]]
-   [malli.core :as malli]
-   [malli.error :as me]
    [malli.generator :as mg]))
 
 (use-fixtures :once
@@ -21,46 +16,43 @@
 
 (deftest create-order-test
   (testing "Create a order"
-    (let [order-request (mg/generate spec/OrderV1Request)
-          request       {:db          (db)
-                         :body-params order-request}]
-      (is (malli/validate spec/OrderV1Request order-request) (-> spec/OrderV1Request (malli/explain order-request) (me/humanize)))
-      (let [{:keys [status body]} (handler/create-order request)
-            expected              (assoc order-request
-                                         :created-at (:created-at body)
-                                         :updated-at (:updated-at body)
-                                         :id (:id body))]
-        (is (= 201 status))
-        (is (= expected body))
-        (is (uuid? (:id body)))
-        (is (inst? (:created-at body)))
-        (is (inst? (:updated-at body)))
-        (is (= (:created-at body) (:updated-at body)))))))
+    (let [order-items           (repeatedly 2 #(mg/generate  spec/OrderItemV1Request))
+          order-request         (assoc (mg/generate spec/OrderV1Request)
+                                       :items order-items)
+          product-ids           (mapv :product-id order-items)
+          _                     (doseq [product-id product-ids]
+                                  (given-product (generate-product product-id))) ; Ensure products exist
+          request               {:db          (log-ds)
+                                 :body-params order-request}
+          total-amount          (reduce + (map #(* (:quantity %) (:price-per-unit %)) order-items))
+          {:keys [status body]} (order-handler/create-order request)
+          expected              (assoc order-request
+                                       :created-at (:created-at body)
+                                       :updated-at (:updated-at body)
+                                       :status "pending"
+                                       :total-amount total-amount
+                                       :id (:id body))]
+      (is (= 201 status))
+      (is (= (dissoc expected :items) (dissoc body :items)))
+      (is (= (:items expected)  (mapv #(select-keys % [:product-id :quantity :price-per-unit]) (:items body))))
+      (is (= (:created-at body) (:updated-at body))))))
 
 (deftest get-orders-test
   (testing "Get all orders"
-    (let [orders (take 2 (repeatedly generate-order))
-          items  (flatten (map :items orders))]
-      (doseq [item items]
-        (product-service/create-product
-         (db)
-         (generate-product (:product-id item))))
-      (doseq [order orders]
-        (repository/create-order-with-items (db) order)) ; Create a order for testing
+    (let [orders (repeatedly 3 generate-order)]
+      (given-orders-with-items! orders) ; Create orders with items for testing
       (is (= {:status 200
               :body   orders}
-             (handler/list-orders {:db (db)}))))))
+             (order-handler/list-orders
+              {:db (db)}))))))
 
 (deftest get-order-by-id
   (testing "Get order by id"
-    (let [order {:id             (random-uuid)
-                 :name           "Test Order"
-                 :description    "This is a test order"
-                 :price-in-cents 100
-                 :created-at     (time/instant-now :micros)
-                 :updated-at     (time/instant-now :micros)}]
-      (repository/create-order-with-items (db) order) ; Create a order for testing
+    (let [order (generate-order)]
+      (given-orders-with-items! [order])
+       ; Create a order for testing
       (is (= {:status 200
               :body   order}
-             (handler/get-order {:db          (db)
-                                 :path-params {:id (str (:id order))}}))))))
+             (order-handler/get-order
+              {:db          (db)
+               :path-params {:id (str (:id order))}}))))))

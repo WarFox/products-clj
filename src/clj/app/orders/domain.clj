@@ -12,15 +12,12 @@
 
    This function respects existing values if they're valid."
   [order-id oi]
-  (let [now (time/instant-now :micros)]
-    (-> oi
-        (update :id #(parse-uuid-or % (random-uuid)))
-        (assoc  :order-id order-id)
-        (update :product-id #(parse-uuid-or % (random-uuid)))
-        (update :price-per-unit #(or % 0))
-        (update :quantity #(or % 1))
-        (update :created-at #(or % now))
-        (update :updated-at #(or % now)))))
+  (-> oi
+      (update :id #(parse-uuid-or % (random-uuid)))
+      (assoc  :order-id order-id)
+      (update :product-id #(parse-uuid-or % %))
+      (update :price-per-unit #(or % 0))
+      (update :quantity #(or % 1))))
 
 (defn calculate-order-total
   "Calculate the total amount for an order based on the order items"

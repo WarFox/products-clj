@@ -32,8 +32,8 @@
 (def OrderItemV1Request
   [:map {:closed true}
    [:product-id :uuid]
-   [:quantity [:int {:min 0}]]
-   [:price-per-unit [:int {:min 0}]]])
+   [:quantity [:int {:min 1 :max 1000}]]
+   [:price-per-unit [:int {:min 0 :max 9999}]]])
 
 (def OrderV1
   [:map {:closed true}
