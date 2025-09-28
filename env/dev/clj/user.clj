@@ -1,5 +1,6 @@
 (ns user
   (:require [app.config :as config]
+            [app.seed]
             [integrant.core :as ig]
             [integrant.repl :as ig-repl]))
 
