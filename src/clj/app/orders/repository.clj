@@ -4,7 +4,10 @@
    [next.jdbc.plan :as plan]
    [next.jdbc.sql :as sql]
    [next.jdbc.types :as types]
-   [integrant.core :as ig]))
+   [clojure.tools.logging :as log]
+   [integrant.core :as ig]
+   [malli.core :as malli]
+   [app.spec :as spec]))
 
 (defn get-orders
   "Fetches all orders from the database"
@@ -55,18 +58,25 @@
                      items
                      jdbc/unqualified-snake-kebab-opts))
 
+(defn- create-order
+  "Creates order"
+  [db order]
+  (sql/insert! db
+               :orders
+               (assoc order
+                      :status (types/as-other (:status order)))
+               (assoc jdbc/unqualified-snake-kebab-opts
+                      :suffix "RETURNING *")))
+
 (defn create-order-with-items
   "Creates a new order with its items in a transaction"
   [db {:keys [items] :as order}]
+  (log/info "Creating Order with items", order)
+  (malli/assert spec/OrderV1 order)
   (jdbc/with-transaction [tx db]
     (let [order-data (dissoc order :items)
-          created-order (sql/insert! tx
-                                     :orders
-                                     (assoc order-data
-                                            :status (types/as-other (:status order-data)))
-                                     (assoc jdbc/unqualified-snake-kebab-opts
-                                            :suffix "RETURNING *"))]
-      (create-order-items tx items)
+          created-order (create-order tx order-data)]
+      (create-order-items tx (map (fn [item] (assoc item :order-id (:id order))) items))
       (get-order-with-items tx (:id created-order)))))
 
 (defn get-order
