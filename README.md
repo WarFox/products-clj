@@ -38,7 +38,6 @@ You may also start the backend using repl using `(go)` function in
 2. Start the UI
 
 ``` shell
-  cd ui
   npm run watch
 ```
 
@@ -47,7 +46,6 @@ This starts the frontend at <http://localhost:8280/> in watch mode for developme
 3. Start tailwind process
 
 ``` shell
-  cd ui
   npm run watch:css
 ```
 
