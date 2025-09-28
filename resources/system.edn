@@ -22,11 +22,9 @@
  :app.migrations/flyway
  {:db #ig/ref :app.db/connection}
 
- :app.db/seed
+ :app.seed/db
  #profile {:dev {:db #ig/ref :app.db/connection
-                 :d_ #ig/ref :app.migrations/flyway}
-           :test nil
-           :prod nil}
+                 :d_ #ig/ref :app.migrations/flyway}}
 
  ;; Products components
  :app.products/repository
