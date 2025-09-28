@@ -1,6 +1,5 @@
 (ns app.db
   (:require
-   [app.util.time :as time]
    [integrant.core :as ig]
    [next.jdbc :as jdbc]
    [next.jdbc.date-time :refer [read-as-instant]]
@@ -30,8 +29,10 @@
   [_ {:keys [db]}]
   (when db
     (log/info "Seeding database with initial data")
-    (let [product (gen/generate-product)
-          order   (gen/generate-order)]
-      (create-product db product)
+    (let [product-for-order (gen/generate-product)
+          order-template    (gen/generate-order)
+          order             (assoc order-template :items
+                                   (map #(assoc % :product-id (:id product-for-order)) (:items order-template)))]
+      (create-product db product-for-order)
       (create-order-with-items db order))))
 
