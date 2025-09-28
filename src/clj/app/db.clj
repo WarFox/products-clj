@@ -5,6 +5,8 @@
    [next.jdbc :as jdbc]
    [next.jdbc.date-time :refer [read-as-instant]]
    [app.products.repository :refer [create-product]]
+   [app.orders.repository :refer [create-order-with-items]]
+   [app.generators :as gen]
    [clojure.tools.logging :as log]))
 
 ;; This is needed to read timestamps as instants from postgres
@@ -28,10 +30,8 @@
   [_ {:keys [db]}]
   (when db
     (log/info "Seeding database with initial data")
-    (create-product db
-                    {:id             (random-uuid)
-                     :name           "Sample Product"
-                     :price-in-cents 1999
-                     :description    "This is a sample product"
-                     :created-at     (time/instant-now :micros)
-                     :updated-at     (time/instant-now :micros)})))
+    (let [product (gen/generate-product)
+          order   (gen/generate-order)]
+      (create-product db product)
+      (create-order-with-items db order))))
+

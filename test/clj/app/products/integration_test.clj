@@ -7,7 +7,7 @@
    [clojure.string :as str]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [fixtures :refer [truncate-table with-system given-product]]
-   [generators :refer [generate-product generate-product-request]]
+   [app.generators :refer [generate-product generate-product-request]]
    [malli.core :as malli]))
 
 (use-fixtures :once
